@@ -21,6 +21,7 @@
     "start": "react-scripts start",
     "electron": "electron .",
     "electron-dev": "node ./electron-dev-start.js",
+    "electron-pack": "npm run build && electron-packager . \"LPC4088 Visualizer\" --platform=linux --arch=x64 --out=./package",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -42,6 +43,7 @@
   },
   "devDependencies": {
     "electron": "^10.1.1",
+    "electron-installer-snap": "^5.1.0",
     "electron-packager": "^15.1.0"
   }
 }
