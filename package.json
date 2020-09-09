@@ -2,6 +2,8 @@
   "name": "cmpe443-lpc4088-visualization",
   "version": "0.1.0",
   "private": true,
+  "main": "./electron.js",
+  "homepage": "./",
   "dependencies": {
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
@@ -17,6 +19,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "electron": "electron .",
+    "electron-dev": "node ./electron-dev-start.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -35,5 +39,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "electron": "^10.1.1",
+    "electron-packager": "^15.1.0"
   }
 }
