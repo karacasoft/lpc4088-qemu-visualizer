@@ -1,4 +1,5 @@
 import React from 'react';
+import QemuCtrl from 'qemu-lpc4088-controller';
 
 import createEngine, {
     DefaultLinkModel,
