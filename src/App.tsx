@@ -6,7 +6,7 @@ import CircuitDisplay from './Diagram';
 function App() {
   return (
     <div className="App">
-      <CircuitDisplay />
+      <CircuitDisplay/>
     </div>
   );
 }
