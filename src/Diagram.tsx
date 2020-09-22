@@ -22,19 +22,27 @@ let engine = createEngine();
 
 
 // Build peripheral buttons
-const PERIPHERAL_SIZE = 12;
+const PERIPHERAL_SIZE = 16;
 
-const PERIPHERAL_NAMES: string[] = ["3.3 Voltage", "Ground", "1K Ω R", "- LED Red +", "+ LED Red -", "- LED Green +", "+ LED Green -", "- LED Blue +", "+ LED Blue -", "- LDR +", "+ LDR -", "Motor Controller"];
-const PERIPHERAL_COLOURS: number[][] = [[192, 64, 0], [128, 128, 128], [64, 64, 64], [255, 0, 0], [255, 0, 0], [0, 255, 0], [0, 255, 0], [0, 0, 255], [0, 0, 255], [255, 127, 0], [255, 127, 0], [192, 0, 64]];
-const PERIPHERAL_PORTS: number[][] = [[1], [1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1, 0]];   // 0: In, 1: Out
-const PERIPHERAL_PINS: string[][] = [["+"], ["-"], ["<=", "=>"], ["-", "+"], ["+", "-"], ["-", "+"], ["+", "-"], ["-", "+"], ["+", "-"], ["-", "+"], ["+", "-"], ["+", "D", "-"]];
+const PERIPHERAL_NAMES: string[] = ["3.3 Voltage", "3.3 Voltage", "Ground", "Ground", "1K Ω R", "- LED Red +", "+ LED Red -", "- LED Green +", "+ LED Green -", "- LED Blue +", "+ LED Blue -", "- LDR +", "+ LDR -", "Potentiometer", "Ultrasound", "Motor Controller"];
+const PERIPHERAL_COLOURS: number[][] = [[192, 64, 0], [192, 64, 0], [128, 128, 128], [128, 128, 128], [64, 64, 64], [255, 0, 0], [255, 0, 0], [0, 255, 0], [0, 255, 0], [0, 0, 255], [0, 0, 255], [255, 127, 0], [255, 127, 0], [192, 0, 64], [64, 128, 192], [128, 192, 64]];
+const PERIPHERAL_PORTS: number[][] = [[0], [1], [0], [1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1]];   // 0: In, 1: Out
+const PERIPHERAL_PINS: string[][] = [["+ Left"], ["Right +"], ["- Left"], ["Right -"], ["<=", "=>"], ["-", "+"], ["+", "-"], ["-", "+"], ["+", "-"], ["-", "+"], ["+", "-"], ["-", "+"], ["+", "-"], ["+", "Out", "-"], ["VCC", "Trig", "Echo", "GND"], ["6-12V", "GND", "5V", "ENA", "IN1", "IN2", "ENB", "IN3", "IN4"]];
+const PERIPHERAL_PLACE: number = 10;
 
 let peripherals: Item[] = [];
 
-let x: number = 10;
+let x: number = PERIPHERAL_PLACE;
 
-for (let i = 0; i < PERIPHERAL_SIZE; i ++) {
+for (let i = 0; i < Math.ceil(PERIPHERAL_SIZE / 2); i ++) {
     peripherals.push(new Item(PERIPHERAL_NAMES[i], true, [x, 10], PERIPHERAL_COLOURS[i],  PERIPHERAL_PORTS[i], PERIPHERAL_PINS[i]));
+    x = x + 90;
+}
+
+x = PERIPHERAL_PLACE;
+
+for (let i = Math.ceil(PERIPHERAL_SIZE / 2); i < PERIPHERAL_SIZE; i ++) {
+    peripherals.push(new Item(PERIPHERAL_NAMES[i], true, [x, 100], PERIPHERAL_COLOURS[i],  PERIPHERAL_PORTS[i], PERIPHERAL_PINS[i]));
     x = x + 90;
 }
 
@@ -66,7 +74,7 @@ for (let i = 0; i < PERIPHERAL_SIZE; i ++) {
     peripherals[i].model.registerListener({
         selectionChanged: () => {
             if (peripherals[i].model.isSelected()) {
-                let connector = new Item(peripherals[i].name, false, [peripherals[i].place[0], peripherals[i].place[1] + 200], peripherals[i].colour, peripherals[i].ports, peripherals[i].pins);
+                let connector = new Item(peripherals[i].name, false, [peripherals[i].place[0], peripherals[i].place[1] + 300], peripherals[i].colour, peripherals[i].ports, peripherals[i].pins);
                 connectors.push(connector);
                 engine.getModel().addNode(connector.model);
                 connector.model.registerListener({
