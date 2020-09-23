@@ -1,5 +1,5 @@
 import createEngine, {
-    DefaultNodeModel
+    DefaultNodeModel, NodeModel
 } from '@projectstorm/react-diagrams';
 
 import { DiamondNodeModel } from './DiamondNodeModel';
@@ -16,7 +16,7 @@ class Item {
     ports: number[];
     pins: string[];
     type: number;
-    model: DefaultNodeModel | DiamondNodeModel;
+    model: NodeModel; 
     ID: string;
 
     constructor(name: string, isLocked: boolean, place: number[], colour: number[], ports: number[], pins: string[], type: number) {

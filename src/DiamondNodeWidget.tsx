@@ -9,6 +9,7 @@ export interface DiamondNodeWidgetProps {
 	node: DiamondNodeModel;
 	engine: DiagramEngine;
 	size?: number;
+	node_port_distance?: number;
 }
 /*
 export declare namespace S {
@@ -31,6 +32,14 @@ export declare namespace S {
  */
 export class DiamondNodeWidget extends React.Component<DiamondNodeWidgetProps> {
 	render() {
+		const { node_port_distance, node } = this.props;
+		const non_null_node_port_distance = node_port_distance ? node_port_distance : 50;
+
+		const left_port = node.getPort(PortModelAlignment.LEFT);
+		const top_port = node.getPort(PortModelAlignment.TOP);
+		const right_port = node.getPort(PortModelAlignment.RIGHT);
+		
+
 		return (
 			<div
 				className={'diamond-node'}
@@ -49,8 +58,8 @@ export class DiamondNodeWidget extends React.Component<DiamondNodeWidgetProps> {
           </g>
           <g id="Layer_2">
             <polygon fill="mediumpurple" stroke="${
-							this.props.node.isSelected() ? 'white' : '#000000'
-						}" stroke-width="3" stroke-miterlimit="10" points="10,` +
+							this.props.node.isSelected() ? 'turquoise' : '#000000'
+						}" stroke-width="2" stroke-miterlimit="10" points="10,` +
 							50 / 2 +
 							` ` +
 							50 / 2 +
@@ -67,51 +76,45 @@ export class DiamondNodeWidget extends React.Component<DiamondNodeWidgetProps> {
         `
 					}}
 				/>
-				<PortWidget
-					style={{
-						top: 50 / 2 - 8,
-						left: -8,
-						position: 'absolute'
-					}}
-					port={this.props.node.getPort(PortModelAlignment.LEFT)}
-					engine={this.props.engine}>
-					<div className={"DiamondPort"} />
-				</PortWidget>
-				<PortWidget
-					style={{
-						left: 50 / 2 - 8,
-						top: -8,
-						position: 'absolute'
-					}}
-					port={this.props.node.getPort(PortModelAlignment.TOP)}
-					engine={this.props.engine}>
-					<div className={"DiamondPort"} />
-				</PortWidget>
-				<PortWidget
-					style={{
-						left: 50 - 8,
-						top: 50 / 2 - 8,
-						position: 'absolute'
-					}}
-					port={this.props.node.getPort(PortModelAlignment.RIGHT)}
-					engine={this.props.engine}>
-					<div className={"DiamondPort"} />
-				</PortWidget>
+				{
+					left_port &&
+						(<PortWidget
+							style={{
+								top: non_null_node_port_distance / 2 - 8,
+								left: -8,
+								position: 'absolute'
+							}}
+							port={left_port}
+							engine={this.props.engine}>
+							<div className={"DiamondPort"} />
+						</PortWidget>)
+				}
+				{
+					top_port && <PortWidget
+						style={{
+							left: non_null_node_port_distance / 2 - 8,
+							top: -8,
+							position: 'absolute'
+						}}
+						port={top_port}
+						engine={this.props.engine}>
+						<div className={"DiamondPort"} />
+					</PortWidget>
+				}
+				{
+					right_port && <PortWidget
+						style={{
+							left: non_null_node_port_distance - 8,
+							top: non_null_node_port_distance / 2 - 8,
+							position: 'absolute'
+						}}
+						port={right_port}
+						engine={this.props.engine}>
+						<div className={"DiamondPort"} />
+					</PortWidget>
+				}
 
 			</div>
 		);
 	}
 }
-
-/*
-				<PortWidget
-					style={{
-						left: 50 / 2 - 8,
-						top: 50 - 8,
-						position: 'absolute'
-					}}
-					port={this.props.node.getPort(PortModelAlignment.BOTTOM)}
-					engine={this.props.engine}>
-					<div className={"DiamondPort"} />
-				</PortWidget>
-*/

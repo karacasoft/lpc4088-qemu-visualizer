@@ -152,11 +152,7 @@ model.addNode(circuit);
 
 engine.getPortFactories().registerFactory(new SimplePortFactory('diamond', (config) => new DiamondPortModel(PortModelAlignment.LEFT)));
 engine.getNodeFactories().registerFactory(new DiamondNodeFactory());
-model.getNodes()[0].getPortFromID("a")?.registerListener(
-    {
-        
-    }
-);
+
 /*
 model.registerListener({
     linksUpdated: (e: any) => {
