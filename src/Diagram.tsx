@@ -6,7 +6,9 @@ import createEngine, {
     DiagramModel,
     NodeModelListener,
     NodeModel,
-    NodeModelGenerics
+    NodeModelGenerics,
+    PortModelAlignment,
+    DefaultPortModel
 } from '@projectstorm/react-diagrams';
 
 import {
@@ -16,18 +18,21 @@ import {
 
 import Item from './Item';
 
+import { DiamondNodeModel } from './DiamondNodeModel';
+import { DiamondNodeFactory } from './DiamondNodeFactory';
+import { SimplePortFactory } from './SimplePortFactory';
+import { DiamondPortModel } from './DiamondPortModel';
+
 let engine = createEngine();
 
-
-
-
 // Build peripheral buttons
-const PERIPHERAL_SIZE = 16;
+const PERIPHERAL_SIZE = 17;
 
-const PERIPHERAL_NAMES: string[] = ["3.3 Voltage", "3.3 Voltage", "Ground", "Ground", "1K Ω R", "- LED Red +", "+ LED Red -", "- LED Green +", "+ LED Green -", "- LED Blue +", "+ LED Blue -", "- LDR +", "+ LDR -", "Potentiometer", "Ultrasound", "Motor Controller"];
-const PERIPHERAL_COLOURS: number[][] = [[192, 64, 0], [192, 64, 0], [128, 128, 128], [128, 128, 128], [64, 64, 64], [255, 0, 0], [255, 0, 0], [0, 255, 0], [0, 255, 0], [0, 0, 255], [0, 0, 255], [255, 127, 0], [255, 127, 0], [192, 0, 64], [64, 128, 192], [128, 192, 64]];
-const PERIPHERAL_PORTS: number[][] = [[0], [1], [0], [1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1]];   // 0: In, 1: Out
-const PERIPHERAL_PINS: string[][] = [["+ Left"], ["Right +"], ["- Left"], ["Right -"], ["<=", "=>"], ["-", "+"], ["+", "-"], ["-", "+"], ["+", "-"], ["-", "+"], ["+", "-"], ["-", "+"], ["+", "-"], ["+", "Out", "-"], ["VCC", "Trig", "Echo", "GND"], ["6-12V", "GND", "5V", "ENA", "IN1", "IN2", "ENB", "IN3", "IN4"]];
+const PERIPHERAL_NAMES: string[] = ["3.3 Voltage", "3.3 Voltage", "Ground", "Ground", "1K Ω R", "- LED Red +", "+ LED Red -", "- LED Green +", "+ LED Green -", "- LED Blue +", "+ LED Blue -", "- LDR +", "+ LDR -", "Potentiometer", "Ultrasound", "Motor Controller", "Diamond"];
+const PERIPHERAL_COLOURS: number[][] = [[192, 64, 0], [192, 64, 0], [128, 128, 128], [128, 128, 128], [64, 64, 64], [255, 0, 0], [255, 0, 0], [0, 255, 0], [0, 255, 0], [0, 0, 255], [0, 0, 255], [255, 127, 0], [255, 127, 0], [192, 0, 64], [64, 128, 192], [128, 192, 64], [128, 0, 255]];
+const PERIPHERAL_PORTS: number[][] = [[0], [1], [0], [1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1], []];   // 0: In, 1: Out
+const PERIPHERAL_PINS: string[][] = [["+ Left"], ["Right +"], ["- Left"], ["Right -"], ["<=", "=>"], ["-", "+"], ["+", "-"], ["-", "+"], ["+", "-"], ["-", "+"], ["+", "-"], ["-", "+"], ["+", "-"], ["+", "Out", "-"], ["VCC", "Trig", "Echo", "GND"], ["6-12V", "GND", "5V", "ENA", "IN1", "IN2", "ENB", "IN3", "IN4"], []];
+const PERIPHERAL_TYPES: number[] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]; // 0: Default, 1: Diamond
 const PERIPHERAL_PLACE: number = 10;
 
 let peripherals: Item[] = [];
@@ -35,15 +40,15 @@ let peripherals: Item[] = [];
 let x: number = PERIPHERAL_PLACE;
 
 for (let i = 0; i < Math.ceil(PERIPHERAL_SIZE / 2); i ++) {
-    peripherals.push(new Item(PERIPHERAL_NAMES[i], true, [x, 10], PERIPHERAL_COLOURS[i],  PERIPHERAL_PORTS[i], PERIPHERAL_PINS[i]));
-    x = x + 90;
+    peripherals.push(new Item(PERIPHERAL_NAMES[i], true, [x, 10], PERIPHERAL_COLOURS[i],  PERIPHERAL_PORTS[i], PERIPHERAL_PINS[i], PERIPHERAL_TYPES[i]));
+    x = x + 100;
 }
 
 x = PERIPHERAL_PLACE;
 
 for (let i = Math.ceil(PERIPHERAL_SIZE / 2); i < PERIPHERAL_SIZE; i ++) {
-    peripherals.push(new Item(PERIPHERAL_NAMES[i], true, [x, 100], PERIPHERAL_COLOURS[i],  PERIPHERAL_PORTS[i], PERIPHERAL_PINS[i]));
-    x = x + 90;
+    peripherals.push(new Item(PERIPHERAL_NAMES[i], true, [x, 100], PERIPHERAL_COLOURS[i],  PERIPHERAL_PORTS[i], PERIPHERAL_PINS[i], PERIPHERAL_TYPES[i]));
+    x = x + 100;
 }
 
 // Bulid chip
@@ -52,7 +57,7 @@ const CHIP_SIZE = 4;
 const CHIP_NAMES: string[] = ["LPC4088 Pins 0", "LPC4088 Pins 1", "LPC4088 Pins 2", "LPC4088 Pins 5"];
 const CHIP_COLOUR: number[] = [240, 60, 60];
 const CHIP_PORTS: number[][] = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0], [0, 0, 0, 0, 0]];  // 0: In, 1: Out
-const CHIP_PINS: string[][] = [["P0.0", "P0.1", "P0.2", "P0.3", "P0.4", "P0.5", "P0.6", "P0.7", "P0.8", "P0.9", "P0.21", "P0.23", "P0.24", "P0.25", "P0.26"], ["P1.2", "P1.3", "P1.5", "P1.6", "P1.7", "P1.11", "P.12", "P1.20", "P1.23", "P1.24", "P1.30", "P1.31"], ["P2.20"], ["P5.0", "P5.1", "P5.2", "P5.3", "P5.4"]];
+const CHIP_PINS: string[][] = [["P0.0", "P0.1", "P0.2", "P0.3", "P0.4", "P0.5", "P0.6", "P0.7", "P0.8", "P0.9", "P0.21", "P0.23", "P0.24", "P0.25", "P0.26"], ["P1.2", "P1.3", "P1.5", "P1.6", "P1.7", "P1.11", "P1.12", "P1.20", "P1.23", "P1.24", "P1.30", "P1.31"], ["P2.10"], ["P5.0", "P5.1", "P5.2", "P5.3", "P5.4"]];
 const CHIP_X: number[] = [150, 275, 225, 50];
 
 let chips: Item[] = [];
@@ -61,7 +66,7 @@ let y: number = 0;
 
 for (let i = 0; i < CHIP_SIZE; i ++) {
     y = y + CHIP_X[i];
-    chips.push(new Item(CHIP_NAMES[i], true, [1200, y], CHIP_COLOUR,  CHIP_PORTS[i], CHIP_PINS[i]));
+    chips.push(new Item(CHIP_NAMES[i], true, [1200, y], CHIP_COLOUR,  CHIP_PORTS[i], CHIP_PINS[i], 0));
 }
 
 // Build circuit peripherals
@@ -74,7 +79,7 @@ for (let i = 0; i < PERIPHERAL_SIZE; i ++) {
     peripherals[i].model.registerListener({
         selectionChanged: () => {
             if (peripherals[i].model.isSelected()) {
-                let connector = new Item(peripherals[i].name, false, [peripherals[i].place[0], peripherals[i].place[1] + 300], peripherals[i].colour, peripherals[i].ports, peripherals[i].pins);
+                let connector = new Item(peripherals[i].name, false, [peripherals[i].place[0], peripherals[i].place[1] + 300], peripherals[i].colour, peripherals[i].ports, peripherals[i].pins, peripherals[i].type);
                 connectors.push(connector);
                 engine.getModel().addNode(connector.model);
                 connector.model.registerListener({
@@ -144,6 +149,44 @@ for (let i = 0; i < CHIP_SIZE; i ++) {
 }
 
 model.addNode(circuit);
+
+engine.getPortFactories().registerFactory(new SimplePortFactory('diamond', (config) => new DiamondPortModel(PortModelAlignment.LEFT)));
+engine.getNodeFactories().registerFactory(new DiamondNodeFactory());
+model.getNodes()[0].getPortFromID("a")?.registerListener(
+    {
+        
+    }
+);
+/*
+model.registerListener({
+    linksUpdated: (e: any) => {
+        if (e.isCreated) {
+            const link = e.link;
+            const sourcePort = link.getSourcePort() as DefaultPortModel;
+
+            if (Object.keys(sourcePort.getLinks()).length > 1) {
+                link.remove();
+                return;
+            }
+            else if (sourcePort.getOptions().in) {
+                link.remove();
+                return;
+            }
+
+            if (link.getTargetPort() as DefaultPortModel !== null) {
+                const targetPort = link.getTargetPort() as DefaultPortModel;
+                if (Object.keys(targetPort.getLinks()).length > 1) {
+                    link.remove();
+                    return;
+                }
+                else if (targetPort.getOptions().in) {
+                    link.remove();
+                    return;
+                }
+            }
+        }
+    }
+});*/
 
 engine.setModel(model);
 
