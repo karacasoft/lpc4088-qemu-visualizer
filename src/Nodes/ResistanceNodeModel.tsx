@@ -4,10 +4,10 @@ import ResistancePortModel from '../Ports/ResistancePortModel';
 
 export default class ResistanceNodeModel extends PeripheralNodeModel {
 
-    value = 0;
+    resistance = 0;
 
-    constructor(locked: boolean, x: number, y: number, model: DiagramModel, value: number) {
-        super({ name: value + " Ω", color: "rgb(64, 64, 64)" });
+    constructor(locked: boolean, x: number, y: number, model: DiagramModel, resistance: number) {
+        super({ name: resistance + " Ω", color: "rgb(64, 64, 64)" });
         this.addInPort("<=");
         this.addOutPort("=>");
         this.setPosition(x, y);
@@ -17,7 +17,7 @@ export default class ResistanceNodeModel extends PeripheralNodeModel {
                 {
                     selectionChanged: () => {
                         if (this.isSelected()) {
-                            let node = new ResistanceNodeModel(false, x, y + 400, model, value)
+                            let node = new ResistanceNodeModel(false, x, y + 400, model, resistance)
                             model.addNode(node);
                             PeripheralNodeModel.all_peripherals.push(node);
                         }
@@ -26,7 +26,7 @@ export default class ResistanceNodeModel extends PeripheralNodeModel {
             );
         }
         this.PERIPHAREL_TYPE = 3;
-        this.value = value;
+        this.resistance = resistance;
     }
 
     addInPort(label: string): ResistancePortModel {

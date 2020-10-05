@@ -4,6 +4,8 @@ import ChipPortModel from '../Ports/ChipPortModel';
 
 export default class ChipNodeModel extends PeripheralNodeModel {
 
+    pin_values: number[] = [];
+
     constructor(locked: boolean, x: number, y: number, model: DiagramModel, part: number) {
         super({ name: "LPC4088 Pins " + part, color: "rgb(255, 0, 64)" });
         this.setPosition(x, y);
@@ -16,6 +18,7 @@ export default class ChipNodeModel extends PeripheralNodeModel {
                             let node = new ChipNodeModel(false, x, y + 200, model, part);
                             for (let i = 0; i <= 31; i ++) {
                                 node.addInPort("P" + part + "." + i);
+                                node.pin_values.push(0);
                             }
                             model.addNode(node);
                             PeripheralNodeModel.chips.push(node);

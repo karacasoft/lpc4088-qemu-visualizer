@@ -6,16 +6,22 @@ export default class LEDNodeModel extends PeripheralNodeModel {
 
     colour: string;
     direction: number;
+    static MAX_CURRENT = 0.005;
 
     constructor(direction: number, locked: boolean, x: number, y: number, model: DiagramModel, colour: string) {
-        if (colour === "R") {
-            super({ name: "LED", color: "rgb(192, 0, 0)" });
-        }
-        else if (colour === "G") {
-            super({ name: "LED", color: "rgb(0, 192, 0)" });
+        if (locked === true) {
+            if (colour === "R") {
+                super({ name: "LED", color: "rgb(192, 0, 0)" });
+            }
+            else if (colour === "G") {
+                super({ name: "LED", color: "rgb(0, 192, 0)" });
+            }
+            else  {
+                super({ name: "LED", color: "rgb(0, 0, 192)" });
+            }
         }
         else  {
-            super({ name: "LED", color: "rgb(0, 0, 192)" });
+            super({ name: "LED", color: "rgb(192, 192, 192)" });
         }
         if (direction === 0) {
             this.addInPort("+");
@@ -34,12 +40,6 @@ export default class LEDNodeModel extends PeripheralNodeModel {
                         if (this.isSelected()) {
                             let node = new LEDNodeModel(direction, false, x, y + 400, model, colour);
                             model.addNode(node);
-                            /*let obj = {
-                                id: node.getID(),
-                                node: node,
-                                colour: colour,
-                                direction: direction
-                            };*/
                             PeripheralNodeModel.all_peripherals.push(node);
                         }
                     }
