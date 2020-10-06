@@ -4,6 +4,8 @@ import GroundNodeModel from './GroundNodeModel';
 import LEDNodeModel from './LEDNodeModel';
 import PeripheralNodeModel from './PeripheralNodeModel';
 import ResistanceNodeModel from './ResistanceNodeModel';
+import SwitchNodeModel from './SwitchNodeModel';
+import UltraSonicNodeModel from './UltraSonicNodeModel';
 import VoltageNodeModel from './VoltageNodeModel';
 
 export default class SimulateNodeModel extends PeripheralNodeModel {
@@ -19,16 +21,7 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
                         // TODO Start simulation
                         console.log("+");
                         
-                        // Remove unconnected links
-                        let links = model.getLinks();
-                        for (let link of links) {
-                            let source_port = link.serialize().sourcePort;
-                            let target_port = link.serialize().targetPort;
-                            if (source_port === null || target_port === null) {
-                                link.remove();
-                            }
-                        }
-                        links = model.getLinks();
+                        this.removeUnconnectedLinks(model);
                         
                         // Gather all chip ports
                         let chip_pins = []
@@ -38,32 +31,24 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
                                 chip_pins.push(port);
                             }
                         }
-                        
-                        // Save each connected circuits
-                        let circuits: string[][][] = [];
+
+                        // Process each chip pins
                         for (let i = 0; i < chip_pins.length; i ++) {
-                            if (chip_pins[i].serialize().links.length > 0) {
-                                let current_circuit: string[][] = [];
-                                let connect: string[] = [];
-                                connect.push((Object.values(chip_pins[i].getLinks())[0].getSourcePort().getParent() as PeripheralNodeModel).getName());
-                                connect.push(Object.values(chip_pins[i].getLinks())[0].getSourcePort().getParent().serialize().id);
-                                connect.push(Object.values(chip_pins[i].getLinks())[0].getSourcePort().serialize().name);
-                                connect.push(Object.values(chip_pins[i].getLinks())[0].getSourcePort().serialize().id);
-                                connect.push((chip_pins[i].getParent() as PeripheralNodeModel).getName());
-                                connect.push(chip_pins[i].getParent().serialize().id);
-                                connect.push(chip_pins[i].serialize().name);
-                                connect.push(chip_pins[i].serialize().id);
-                                current_circuit.push(connect);
-                                this.generateCircuit(current_circuit, connect[1], connect[2]);
-                                circuits.push(current_circuit);
-                                /*console.log("Final length: " + current_circuit.length);
-                                console.log(current_circuit);
-                                console.log(PeripheralNodeModel.all_peripherals);*/
+                            let links = chip_pins[i].getLinks();
+                            for (let link of Object.values(links)) {
+                                if (link.getSourcePort() !== null && link.getTargetPort() !== null) {
+                                    if ((link.getSourcePort().getNode() as PeripheralNodeModel).getName().substring(0, 3) === "LPC") {
+                                        this.selectCircuitType(PeripheralNodeModel.linkSourceTarget(link));
+                                    }
+                                    else {
+                                        this.selectCircuitType(PeripheralNodeModel.linkTargetSource(link));
+                                    }
+                                }
                             }
                         }
 
                         // Call simulation
-                        this.Simulate(circuits);
+                        //this.Simulate(circuits);*/
                     }
                     else {
                         // TODO Stop simulation
@@ -72,6 +57,45 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
                 }
             }
         );
+    }
+
+    removeUnconnectedLinks(model: DiagramModel) {
+
+        let links = model.getLinks();
+        for (let link of links) {
+            let source_port = link.serialize().sourcePort;
+            let target_port = link.serialize().targetPort;
+            if (source_port === null || target_port === null) {
+                link.remove();
+            }
+        }
+
+    }
+
+    selectCircuitType(start_link: string[]) {
+
+        // UltraSonic
+        if (start_link[4] === "UltraSonic" && start_link[6] === "Trig") {
+            let chip = PeripheralNodeModel.getChip(start_link[1]) as ChipNodeModel;
+            let ultrasonic = PeripheralNodeModel.getPeripheral(start_link[5]) as UltraSonicNodeModel;
+            let links = ultrasonic.getOtherConnections(start_link[6]);
+
+            if (links.length === 4 && links[0][4] === "Voltage" && links[2][4].substring(0, 3) === "LPC" && links[3][4] === "Ground") {
+                // TODO QEMU
+                console.log(links);
+                return;
+            }
+        }
+
+        // Switch and LEDs
+        if (start_link[4] === "Switch" &&  start_link[6] === "Selector") {
+            let chip = PeripheralNodeModel.getChip(start_link[1]) as ChipNodeModel;
+            let switchh = PeripheralNodeModel.getPeripheral(start_link[5]) as SwitchNodeModel;
+            let links = switchh.getOtherConnections(start_link[6]);
+
+            
+        }
+
     }
 
     generateCircuit(circuit: string[][], node_id: string, port_name: string) {

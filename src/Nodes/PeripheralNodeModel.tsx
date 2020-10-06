@@ -1,11 +1,13 @@
-import { DefaultNodeModel } from '@projectstorm/react-diagrams';
+import { DefaultNodeModel, LinkModel } from '@projectstorm/react-diagrams';
 /*
 enum Peripheral_Type {
     Chip,
     Ground,
     Voltage,
     Resistance,
-    LED
+    LED,
+    UltraSonic,
+    Switch
 }
 */
 export default class PeripheralNodeModel extends DefaultNodeModel {
@@ -18,7 +20,7 @@ export default class PeripheralNodeModel extends DefaultNodeModel {
         this.options.color = colour;
     }
 
-    getName () : string {
+    getName(): string {
         return this.options.name as string;
     }
 
@@ -43,6 +45,32 @@ export default class PeripheralNodeModel extends DefaultNodeModel {
             }
         }
         return null;
+    }
+
+    static linkSourceTarget(link: LinkModel): string[] {
+        let connect: string[] = [];
+        connect.push((link.getSourcePort().getNode() as PeripheralNodeModel).getName());
+        connect.push(link.getSourcePort().getNode().getID());
+        connect.push(link.getSourcePort().getName());
+        connect.push(link.getSourcePort().getID());
+        connect.push((link.getTargetPort().getNode() as PeripheralNodeModel).getName());
+        connect.push(link.getTargetPort().getNode().getID());
+        connect.push(link.getTargetPort().getName());
+        connect.push(link.getTargetPort().getID());
+        return connect;
+    }
+
+    static linkTargetSource(link: LinkModel): string[] {
+        let connect: string[] = [];
+        connect.push((link.getTargetPort().getNode() as PeripheralNodeModel).getName());
+        connect.push(link.getTargetPort().getNode().getID());
+        connect.push(link.getTargetPort().getName());
+        connect.push(link.getTargetPort().getID());
+        connect.push((link.getSourcePort().getNode() as PeripheralNodeModel).getName());
+        connect.push(link.getSourcePort().getNode().getID());
+        connect.push(link.getSourcePort().getName());
+        connect.push(link.getSourcePort().getID());
+        return connect;
     }
 
 } 

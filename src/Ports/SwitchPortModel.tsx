@@ -1,7 +1,7 @@
 import { PortModel } from '@projectstorm/react-diagrams';
 import PeripheralPortModel from './PeripheralPortModel';
 
-export default class ChipPortModel extends PeripheralPortModel {
+export default class SwitchPortModel extends PeripheralPortModel {
 
     canLinkToPort(port: PortModel): boolean {
 

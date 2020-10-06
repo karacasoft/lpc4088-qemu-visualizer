@@ -14,6 +14,8 @@ import VoltageNodeModel from './Nodes/VoltageNodeModel';
 import LEDNodeModel from './Nodes/LEDNodeModel';
 import ResistanceNodeModel from './Nodes/ResistanceNodeModel';
 import SimulateNodeModel from './Nodes/SimulateNodeModel';
+import UltraSonicNodeModel from './Nodes/UltraSonicNodeModel';
+import SwitchNodeModel from './Nodes/SwitchNodeModel';
 
 let engine = createEngine({ registerDefaultZoomCanvasAction: false });
 const model = new DiagramModel();
@@ -30,22 +32,17 @@ model.addNode(new LEDNodeModel(0, true, 180, LINES[1], model, "G"));
 model.addNode(new LEDNodeModel(1, true, 265, LINES[1], model, "G"));
 model.addNode(new LEDNodeModel(0, true, 350, LINES[1], model, "B"));
 model.addNode(new LEDNodeModel(1, true, 435, LINES[1], model, "B"));
+model.addNode(new UltraSonicNodeModel(true, 520, LINES[1], model));
+model.addNode(new SwitchNodeModel(true, 595, LINES[1], model));
 
 // Set chip
-/*let chips: ChipNodeModel[] = [];
-chips.push(new ChipNodeModel(1300, 150, model, 0));
-chips.push(new ChipNodeModel(1300, 425, model, 1));
-chips.push(new ChipNodeModel(1300, 650, model, 2));
-chips.push(new ChipNodeModel(1300, 700, model, 3));
-chips.forEach(element => {
-    model.addNode(element);
-});*/
 model.addNode(new ChipNodeModel(true, 1000, LINES[0], model, 0));
 model.addNode(new ChipNodeModel(true, 1100, LINES[0], model, 1));
 model.addNode(new ChipNodeModel(true, 1200, LINES[0], model, 2));
 model.addNode(new ChipNodeModel(true, 1300, LINES[0], model, 3));
 model.addNode(new ChipNodeModel(true, 1400, LINES[0], model, 4));
 model.addNode(new ChipNodeModel(true, 1500, LINES[0], model, 5));
+
 // Set buttons
 model.addNode(new SimulateNodeModel(1300, LINES[1], model));
 

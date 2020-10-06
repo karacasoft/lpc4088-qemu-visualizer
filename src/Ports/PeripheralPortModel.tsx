@@ -6,6 +6,8 @@ export default class PeripheralPortModel extends DefaultPortModel {
     }*/
 
     canLinkToPortAsTarget(): boolean {
+
         return true;
+        
     }
 }
