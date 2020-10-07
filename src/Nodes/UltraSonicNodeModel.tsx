@@ -40,18 +40,13 @@ export default class UltraSonicNodeModel extends PeripheralNodeModel {
         return port;
     }
 
-    getOtherConnections(port_name: string): string[][] {
+    getOtherConnections(port_id: string): string[][] {
         let connections: string[][] = [];
-
-        if (port_name !== "Trig") {
-            console.log("ERROR port rule violation in ultrasonic sensor: " + port_name);
-            return connections;
-        }
 
         let links_Vcc = this.getOutPorts()[0].getLinks();
         for (let link of Object.values(links_Vcc)) {
             if (link.getSourcePort() !== null && link.getTargetPort() !== null) {
-                if ((link.getSourcePort().getNode() as PeripheralNodeModel).getName() === "UltraSonic") {
+                if (link.getSourcePort().getNode().getID() === this.getID()) {
                     connections.push(PeripheralNodeModel.linkSourceTarget(link));
                 }
                 else {
@@ -63,7 +58,7 @@ export default class UltraSonicNodeModel extends PeripheralNodeModel {
         let links_Trig = this.getOutPorts()[1].getLinks();
         for (let link of Object.values(links_Trig)) {
             if (link.getSourcePort() !== null && link.getTargetPort() !== null) {
-                if ((link.getSourcePort().getNode() as PeripheralNodeModel).getName() === "UltraSonic") {
+                if (link.getSourcePort().getNode().getID() === this.getID()) {
                     connections.push(PeripheralNodeModel.linkSourceTarget(link));
                 }
                 else {
@@ -75,7 +70,7 @@ export default class UltraSonicNodeModel extends PeripheralNodeModel {
         let links_Echo = this.getOutPorts()[2].getLinks();
         for (let link of Object.values(links_Echo)) {
             if (link.getSourcePort() !== null && link.getTargetPort() !== null) {
-                if ((link.getSourcePort().getNode() as PeripheralNodeModel).getName() === "UltraSonic") {
+                if (link.getSourcePort().getNode().getID() === this.getID()) {
                     connections.push(PeripheralNodeModel.linkSourceTarget(link));
                 }
                 else {
@@ -87,7 +82,7 @@ export default class UltraSonicNodeModel extends PeripheralNodeModel {
         let links_GND = this.getOutPorts()[3].getLinks();
         for (let link of Object.values(links_GND)) {
             if (link.getSourcePort() !== null && link.getTargetPort() !== null) {
-                if ((link.getSourcePort().getNode() as PeripheralNodeModel).getName() === "UltraSonic") {
+                if (link.getSourcePort().getNode().getID() === this.getID()) {
                     connections.push(PeripheralNodeModel.linkSourceTarget(link));
                 }
                 else {

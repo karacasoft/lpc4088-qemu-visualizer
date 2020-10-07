@@ -38,9 +38,4 @@ export default class GroundNodeModel extends PeripheralNodeModel {
         return port;
     }
     
-    getOtherConnections(port_name: string): string[][] {
-        let connections: string[][] = [];
-        return connections;
-    }
-
 } 

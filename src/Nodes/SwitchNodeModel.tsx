@@ -40,45 +40,69 @@ export default class SwitchNodeModel extends PeripheralNodeModel {
         return port;
     }
 
-    getOtherConnections(port_name: string): string[][] {
+    getOtherConnections(port_id: string): string[][] {
         let connections: string[][] = [];
 
-        if (Object.values(this.getInPorts()[0].getLinks()).length > 0){
-            if (port_name !== this.getInPorts()[0].getName()) {
-                let source_port = Object.values(this.getInPorts()[0].getLinks())[0].serialize().sourcePort;
-                if (source_port !== null) {
-                    let connect: string[] = [];
-                    connect.push((Object.values(this.getInPorts()[0].getLinks())[0].getSourcePort().getParent() as PeripheralNodeModel).getName());
-                    connect.push(Object.values(this.getInPorts()[0].getLinks())[0].serialize().source);
-                    connect.push(Object.values(this.getInPorts()[0].getLinks())[0].getSourcePort().serialize().name);
-                    connect.push(Object.values(this.getInPorts()[0].getLinks())[0].serialize().sourcePort);
-                    connect.push(this.getName());
-                    connect.push(this.getID());
-                    connect.push(this.getInPorts()[0].getName());
-                    connect.push(this.getInPorts()[0].getID());
-                    connections.push(connect);
+        let links_Selector = this.getOutPorts()[0].getLinks();
+        for (let link of Object.values(links_Selector)) {
+            if (link.getSourcePort() !== null && link.getTargetPort() !== null) {
+                if (link.getSourcePort().getNode().getID() === this.getID()) {
+                    connections.push(PeripheralNodeModel.linkSourceTarget(link));
+                }
+                else {
+                    connections.push(PeripheralNodeModel.linkTargetSource(link));
                 }
             }
         }
 
-        if (Object.values(this.getOutPorts()[0].getLinks()).length > 0){
-            if (port_name !== this.getOutPorts()[0].getName()) {
-                let target_port = Object.values(this.getOutPorts()[0].getLinks())[0].serialize().targetPort;
-                if (target_port !== null) {
-                    let connect: string[] = [];
-                    connect.push(this.getName());
-                    connect.push(this.getID());
-                    connect.push(this.getOutPorts()[0].getName());
-                    connect.push(this.getOutPorts()[0].getID());
-                    connect.push((Object.values(this.getOutPorts()[0].getLinks())[0].getTargetPort().getParent() as PeripheralNodeModel).getName());
-                    connect.push(Object.values(this.getOutPorts()[0].getLinks())[0].serialize().target);
-                    connect.push(Object.values(this.getOutPorts()[0].getLinks())[0].getTargetPort().serialize().name);
-                    connect.push(Object.values(this.getOutPorts()[0].getLinks())[0].serialize().targetPort);
-                    connections.push(connect);
+        let links_Voltage = this.getOutPorts()[1].getLinks();
+        for (let link of Object.values(links_Voltage)) {
+            if (link.getSourcePort() !== null && link.getTargetPort() !== null) {
+                if (link.getSourcePort().getNode().getID() === this.getID()) {
+                    connections.push(PeripheralNodeModel.linkSourceTarget(link));
+                }
+                else {
+                    connections.push(PeripheralNodeModel.linkTargetSource(link));
                 }
             }
         }
 
+        if (connections.length === 1) {
+            connections.push([]);
+        }
+
+        let links_0 = this.getInPorts()[0].getLinks();
+        for (let link of Object.values(links_0)) {
+            if (link.getSourcePort() !== null && link.getTargetPort() !== null) {
+                if (link.getSourcePort().getNode().getID() === this.getID()) {
+                    connections.push(PeripheralNodeModel.linkSourceTarget(link));
+                }
+                else {
+                    connections.push(PeripheralNodeModel.linkTargetSource(link));
+                }
+            }
+        }
+
+        if (connections.length === 2) {
+            connections.push([]);
+        }
+
+        let links_1 = this.getInPorts()[1].getLinks();
+        for (let link of Object.values(links_1)) {
+            if (link.getSourcePort() !== null && link.getTargetPort() !== null) {
+                if (link.getSourcePort().getNode().getID() === this.getID()) {
+                    connections.push(PeripheralNodeModel.linkSourceTarget(link));
+                }
+                else {
+                    connections.push(PeripheralNodeModel.linkTargetSource(link));
+                }
+            }
+        }
+
+        if (connections.length === 3) {
+            connections.push([]);
+        }
+        
         return connections;
     }
     

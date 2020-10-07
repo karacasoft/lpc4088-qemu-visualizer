@@ -24,7 +24,7 @@ export default class PeripheralNodeModel extends DefaultNodeModel {
         return this.options.name as string;
     }
 
-    getOtherConnections(port_name: string): string[][] {
+    getOtherConnections(port_id: string): string[][] {
         let connections: string[][] = [];
         return connections;
     }

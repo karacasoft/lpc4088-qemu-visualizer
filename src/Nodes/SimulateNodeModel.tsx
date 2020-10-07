@@ -22,6 +22,7 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
                         console.log("+");
                         
                         this.removeUnconnectedLinks(model);
+                        this.clearLEDS(model);
                         
                         // Gather all chip ports
                         let chip_pins = []
@@ -72,240 +73,187 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
 
     }
 
+    clearLEDS(model: DiagramModel) {
+        for (let node of PeripheralNodeModel.all_peripherals) {
+            if (node.PERIPHAREL_TYPE === 4) {
+                (node as LEDNodeModel).depaint();
+            }
+        }
+    }
+
     selectCircuitType(start_link: string[]) {
 
-        // UltraSonic
-        if (start_link[4] === "UltraSonic" && start_link[6] === "Trig") {
+        let node = PeripheralNodeModel.getPeripheral(start_link[5]);
+        if (node === null) {
+            return;
+        }
+
+        if (this.circuitUltraSonic(start_link, node) === true) {
+            return;
+        }
+
+        if (this.circuitSwitch(start_link, node) === true) {
+            return;
+        }
+
+    }
+
+    circuitUltraSonic(start_link: string[], node: PeripheralNodeModel): boolean {
+        
+        if (node.PERIPHAREL_TYPE === 5 && start_link[6] === "Trig") {
             let chip = PeripheralNodeModel.getChip(start_link[1]) as ChipNodeModel;
-            let ultrasonic = PeripheralNodeModel.getPeripheral(start_link[5]) as UltraSonicNodeModel;
+            let ultrasonic = node as UltraSonicNodeModel;
             let links = ultrasonic.getOtherConnections(start_link[6]);
 
-            if (links.length === 4 && links[0][4] === "Voltage" && links[2][4].substring(0, 3) === "LPC" && links[3][4] === "Ground") {
-                // TODO QEMU
-                console.log(links);
-                return;
+            if (links.length !== 4) {
+                return false;
             }
+
+            let node_voltage = PeripheralNodeModel.getPeripheral(links[0][5]);
+            if (node_voltage === null || node_voltage.PERIPHAREL_TYPE !== 2) {
+                return false;
+            }
+
+            let node_ground = PeripheralNodeModel.getPeripheral(links[3][5]);
+            if (node_ground === null || node_ground.PERIPHAREL_TYPE !== 1) {
+                return false;
+            }
+
+            let node_chip = PeripheralNodeModel.getChip(links[2][5]);
+            if (node_chip === null || node_chip.PERIPHAREL_TYPE !== 0) {
+                return false;
+            }
+
+            // TODO QEMU
+            console.log(links);
+            return true;
         }
 
-        // Switch and LEDs
-        if (start_link[4] === "Switch" &&  start_link[6] === "Selector") {
+        return false;
+    }
+
+    circuitSwitch(start_link: string[], node: PeripheralNodeModel): boolean {
+
+        if (node.PERIPHAREL_TYPE === 6 && start_link[6] === "Selector") {
             let chip = PeripheralNodeModel.getChip(start_link[1]) as ChipNodeModel;
-            let switchh = PeripheralNodeModel.getPeripheral(start_link[5]) as SwitchNodeModel;
-            let links = switchh.getOtherConnections(start_link[6]);
+            let switchh = node as SwitchNodeModel;
+            let links = switchh.getOtherConnections(start_link[7]);
+            let total_resistance = 0.001;
+            let voltage = 0;
 
-            
-        }
-
-    }
-
-    generateCircuit(circuit: string[][], node_id: string, port_name: string) {
-        for (let peripheral of PeripheralNodeModel.all_peripherals) {
-            /*console.log(peripheral.getID() === node_id);
-            console.log(node_id);
-            console.log(peripheral.getID());*/
-            if (peripheral.getID() === node_id) {
-                //console.log(peripheral.getOtherConnections(port_name));
-                let connections = peripheral.getOtherConnections(port_name);
-                for (let connect of connections) {
-                    circuit.push(connect);
-                    /*console.log(node_id === connect[1]);
-                    console.log(node_id === connect[5]);
-                    console.log(node_id);
-                    console.log(connect[1]);
-                    console.log(connect[5]);*/
-                    if (node_id === connect[5]) {
-                        this.generateCircuit(circuit, connect[1], connect[2]);
-                    }
-                    else if (node_id === connect[1]) {
-                        this.generateCircuit(circuit, connect[5], connect[6]);
-                    }
-                    else if (connect[1] === connect[5]) {
-                        console.log("ERROR in connections: " + connect[1] + " " + connect[5]);
-                    }
-                    else {
-                        console.log("ERROR: in connections" + node_id + " " + connect[1] + " " + connect[5]);
-                    }
-                }
+            // Voltage line
+            if (links[1].length !== 8) {
+                return false;
             }
-        }
-    }
 
-    Simulate(circuits: string[][][]) {
-        console.log("Simulate");
-        for (let circuit of circuits) {
+            let line_voltage = [];
+            line_voltage.push(links[1]);
+            let next_node = PeripheralNodeModel.getPeripheral(line_voltage[0][5]);
 
-            // Check for series circuit
-            let circuit1 = circuit.length - 1;
-            let circuit0 = circuit.length;
-            let single = true;
-            for (let i = 0; i < circuit1; i ++) {
-                for (let j = i + 1; j < circuit0; j ++) {
-                    if (circuit[i][1] === circuit[j][1] || circuit[i][5] === circuit[j][5]) {
-                        single = false;
-                        break;
-                    }
-                }
-                if (single === false) {
+            while(next_node !== null) {
+                if (next_node.PERIPHAREL_TYPE === 2) {
+                    voltage = (next_node as VoltageNodeModel).voltage;
                     break;
                 }
-            }
-
-            // A series circuit has confirmed
-            if (single === true) {
-
-                // Check for LED circuit
-                let chip_node = PeripheralNodeModel.getChip(circuit[0][5]);
-                if (chip_node instanceof ChipNodeModel) {
-                    let pin_value = chip_node.pin_values[0];
-                    // From voltage source to pin
-                    if (pin_value === 0) {
-                        let voltage_node = PeripheralNodeModel.getPeripheral(circuit[circuit.length - 1][1]);
-                        console.log(voltage_node);
-                        if (voltage_node instanceof VoltageNodeModel) {
-                            let voltage = voltage_node.voltage;
-                            let total_resistance = 0.00001;
-                            let isValid = true;
-                            if (circuit.length > 1) {
-                                for (let i = 1; i < circuit.length; i ++) {
-                                    let node = PeripheralNodeModel.getPeripheral(circuit[i][5]);
-                                    if (node instanceof LEDNodeModel) {
-                                        if (node.direction === 1) {
-                                            isValid = false;
-                                            break;
-                                        }
-                                    }
-                                    else if (node instanceof ResistanceNodeModel) {
-                                        total_resistance = total_resistance + node.resistance;
-                                    }
-                                    else {
-                                        isValid = false;
-                                        break;
-                                    }
-                                }
-                            }
-                            else {
-                                isValid = false;
-                            }
-
-                            // Update LEDs if circuit is valid
-                            if (isValid === true) {
-                                let current = voltage / total_resistance;
-                                console.log("Current: " + current);
-                                let colour = 255 * current / LEDNodeModel.MAX_CURRENT;
-                                console.log("Colour: " + colour);
-                                for (let i = 1; i < circuit.length; i ++) {
-                                    let node = PeripheralNodeModel.getPeripheral(circuit[i][5]);
-                                    if (node instanceof LEDNodeModel) {
-                                        if (node.colour === "R") {
-                                            if (colour > 255) {
-                                                node.getOptions().color = "rgb(255, 255, 255)";
-                                            }
-                                            else {
-                                                node.getOptions().color = "rgb(" + colour + ", 0, 0)";
-                                            }
-                                        }
-                                        else if (node.colour === "G") {
-                                            if (colour > 255) {
-                                                node.getOptions().color = "rgb(255, 255, 255)";
-                                            }
-                                            else {
-                                                node.getOptions().color = "rgb(0, " + colour + ", 0)";
-                                            }
-                                        }
-                                        else if (node.colour === "B") {
-                                            if (colour > 255) {
-                                                node.getOptions().color = "rgb(255, 255, 255)";
-                                            }
-                                            else {
-                                                node.getOptions().color = "rgb(0, 0, " + colour + ")";
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                if (next_node.PERIPHAREL_TYPE === 3) {
+                    total_resistance = total_resistance + (next_node as ResistanceNodeModel).resistance;
+                    let next_link = next_node.getOtherConnections(line_voltage[line_voltage.length - 1][7]);
+                    if (next_link.length === 1) {
+                        next_node = PeripheralNodeModel.getPeripheral(next_link[0][5]);
+                        line_voltage.push(next_link[0]);
                     }
-
-                    // From pin to ground
                     else {
-                        let ground_node = PeripheralNodeModel.getPeripheral(circuit[circuit.length - 1][1]);
-                        if (ground_node instanceof GroundNodeModel) {
-                            let voltage = pin_value;
-                            let total_resistance = 0.00001;
-                            let isValid = true;
-                            if (circuit.length > 1) {
-                                for (let i = 1; i < circuit.length; i ++) {
-                                    let node = PeripheralNodeModel.getPeripheral(circuit[i][5]);
-                                    if (node instanceof LEDNodeModel) {
-                                        if (node.direction === 0) {
-                                            isValid = false;
-                                            break;
-                                        }
-                                    }
-                                    else if (node instanceof ResistanceNodeModel) {
-                                        total_resistance = total_resistance + node.resistance;
-                                    }
-                                    else {
-                                        isValid = false;
-                                        break;
-                                    }
-                                }
-                            }
-                            else {
-                                isValid = false;
-                            }
-
-                            // Update LEDs if circuit is valid
-                            if (isValid === true) {
-                                let current = voltage / total_resistance;
-                                console.log("Current: " + current);
-                                let colour = 255 * current / LEDNodeModel.MAX_CURRENT;
-                                console.log("Colour: " + colour);
-                                for (let i = 1; i < circuit.length; i ++) {
-                                    let node = PeripheralNodeModel.getPeripheral(circuit[i][5]);
-                                    if (node instanceof LEDNodeModel) {
-                                        if (node.colour === "R") {
-                                            if (colour > 255) {
-                                                node.getOptions().color = "rgb(255, 255, 255)";
-                                            }
-                                            else {
-                                                node.getOptions().color = "rgb(" + colour + ", 0, 0)";
-                                            }
-                                        }
-                                        else if (node.colour === "G") {
-                                            if (colour > 255) {
-                                                node.getOptions().color = "rgb(255, 255, 255)";
-                                            }
-                                            else {
-                                                node.getOptions().color = "rgb(0, " + colour + ", 0)";
-                                            }
-                                        }
-                                        else if (node.colour === "B") {
-                                            if (colour > 255) {
-                                                node.getOptions().color = "rgb(255, 255, 255)";
-                                            }
-                                            else {
-                                                node.getOptions().color = "rgb(0, 0, " + colour + ")";
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        return false;
                     }
+                }
+                else if (next_node.PERIPHAREL_TYPE === 4) {
+                    if ((next_node as LEDNodeModel).direction === 0) {
+                        return false;
+                    }
+                    let next_link = next_node.getOtherConnections(line_voltage[line_voltage.length - 1][7]);
+                    if (next_link.length === 1) {
+                        next_node = PeripheralNodeModel.getPeripheral(next_link[0][5]);
+                        line_voltage.push(next_link[0]);
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                else {
+                    return false;
                 }
             }
 
-            // A parallel circuit has confirmed
-            else {
+            // Logic lines
+            let logic_value = chip.getLogicValue(start_link[2]);
+            let line_logic = [];
 
+            if (logic_value === 0 && links[2].length === 8) {
+                line_logic.push(links[2]);
+            }
+            else if (logic_value > 0 && links[3].length === 8) {
+                line_logic.push(links[3]);
+            }
+            else {
+                return false;
             }
 
+            next_node = PeripheralNodeModel.getPeripheral(line_logic[0][5]);
+
+            while(next_node !== null) {
+                if (next_node.PERIPHAREL_TYPE === 1) {
+                    break;
+                }
+                if (next_node.PERIPHAREL_TYPE === 3) {
+                    total_resistance = total_resistance + (next_node as ResistanceNodeModel).resistance;
+                    let next_link = next_node.getOtherConnections(line_logic[line_logic.length - 1][7]);
+                    if (next_link.length === 1) {
+                        next_node = PeripheralNodeModel.getPeripheral(next_link[0][5]);
+                        line_logic.push(next_link[0]);
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                else if (next_node.PERIPHAREL_TYPE === 4) {
+                    if ((next_node as LEDNodeModel).direction === 0) {
+                        return false;
+                    }
+                    let next_link = next_node.getOtherConnections(line_logic[line_logic.length - 1][7]);
+                    if (next_link.length === 1) {
+                        next_node = PeripheralNodeModel.getPeripheral(next_link[0][5]);
+                        line_logic.push(next_link[0]);
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                else {
+                    return false;
+                }
+            }
+
+            let current = voltage / total_resistance;
+            
+            for (let i = 0; i < line_voltage.length; i ++) {
+                let current_node = PeripheralNodeModel.getPeripheral(line_voltage[i][5]);
+                if (current_node !== null && current_node.PERIPHAREL_TYPE === 4) {
+                    (current_node as LEDNodeModel).paint(current);                   
+                }
+            }
+
+            for (let i = 0; i < line_logic.length; i ++) {
+                let current_node = PeripheralNodeModel.getPeripheral(line_logic[i][5]);
+                if (current_node !== null && current_node.PERIPHAREL_TYPE === 4) {
+                    (current_node as LEDNodeModel).paint(current);                   
+                }
+            }
+
+            return true;
+
         }
-    }
 
-    configurationLED(circuit: string[][][]) {
-
+        return false;
     }
     
 } 

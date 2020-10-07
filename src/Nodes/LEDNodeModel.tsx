@@ -63,46 +63,54 @@ export default class LEDNodeModel extends PeripheralNodeModel {
         return port;
     }
 
-    getOtherConnections(port_name: string): string[][] {
+    getOtherConnections(port_ID: string): string[][] {
         let connections: string[][] = [];
 
-        if (Object.values(this.getInPorts()[0].getLinks()).length > 0){
-            if (port_name !== this.getInPorts()[0].getName()) {
-                let source_port = Object.values(this.getInPorts()[0].getLinks())[0].serialize().sourcePort;
-                if (source_port !== null) {
-                    let connect: string[] = [];
-                    connect.push((Object.values(this.getInPorts()[0].getLinks())[0].getSourcePort().getParent() as PeripheralNodeModel).getName());
-                    connect.push(Object.values(this.getInPorts()[0].getLinks())[0].serialize().source);
-                    connect.push(Object.values(this.getInPorts()[0].getLinks())[0].getSourcePort().serialize().name);
-                    connect.push(Object.values(this.getInPorts()[0].getLinks())[0].serialize().sourcePort);
-                    connect.push(this.getName());
-                    connect.push(this.getID());
-                    connect.push(this.getInPorts()[0].getName());
-                    connect.push(this.getInPorts()[0].getID());
-                    connections.push(connect);
+        let links_left = this.getInPorts()[0].getLinks();
+        for (let link of Object.values(links_left)) {
+            if (link.getSourcePort() !== null && link.getTargetPort() !== null && link.getSourcePort().getID() !== port_ID && link.getTargetPort().getID() !== port_ID) {
+                if (link.getSourcePort().getNode().getID() === this.getID()) {
+                    connections.push(PeripheralNodeModel.linkSourceTarget(link));
+                }
+                else {
+                    connections.push(PeripheralNodeModel.linkTargetSource(link));
                 }
             }
         }
 
-        if (Object.values(this.getOutPorts()[0].getLinks()).length > 0){
-            if (port_name !== this.getOutPorts()[0].getName()) {
-                let target_port = Object.values(this.getOutPorts()[0].getLinks())[0].serialize().targetPort;
-                if (target_port !== null) {
-                    let connect: string[] = [];
-                    connect.push(this.getName());
-                    connect.push(this.getID());
-                    connect.push(this.getOutPorts()[0].getName());
-                    connect.push(this.getOutPorts()[0].getID());
-                    connect.push((Object.values(this.getOutPorts()[0].getLinks())[0].getTargetPort().getParent() as PeripheralNodeModel).getName());
-                    connect.push(Object.values(this.getOutPorts()[0].getLinks())[0].serialize().target);
-                    connect.push(Object.values(this.getOutPorts()[0].getLinks())[0].getTargetPort().serialize().name);
-                    connect.push(Object.values(this.getOutPorts()[0].getLinks())[0].serialize().targetPort);
-                    connections.push(connect);
+        let links_right = this.getOutPorts()[0].getLinks();
+        for (let link of Object.values(links_right)) {
+            if (link.getSourcePort() !== null && link.getTargetPort() !== null && link.getSourcePort().getID() !== port_ID && link.getTargetPort().getID() !== port_ID) {
+                if (link.getSourcePort().getNode().getID() === this.getID()) {
+                    connections.push(PeripheralNodeModel.linkSourceTarget(link));
+                }
+                else {
+                    connections.push(PeripheralNodeModel.linkTargetSource(link));
                 }
             }
         }
 
         return connections;
     }
- 
+
+    paint(current: number) {
+        let value = (current / 0.005) * 255;
+        if (value > 255) {
+            value = 255;
+        }
+
+        if (this.colour === "R") {
+            this.options.color = "rgb(" + value + ", 0, 0)";
+        }
+        else if (this.colour === "G") {
+            this.options.color = "rgb(0, " + value + ", 0)";
+        }
+        else {
+            this.options.color = "rgb(0, 0, " + value + ")";
+        }
+    }
+
+    depaint() {
+        this.options.color = "rgb(192, 192, 192)";
+    }
 } 
