@@ -1,6 +1,5 @@
 import { DiagramModel } from '@projectstorm/react-diagrams';
 import ChipNodeModel from './ChipNodeModel';
-import GroundNodeModel from './GroundNodeModel';
 import LEDNodeModel from './LEDNodeModel';
 import PeripheralNodeModel from './PeripheralNodeModel';
 import ResistanceNodeModel from './ResistanceNodeModel';
@@ -88,14 +87,108 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
             return;
         }
 
+        if (this.circuitLED(start_link, node) === true) {
+            return;
+        }
+
         if (this.circuitUltraSonic(start_link, node) === true) {
             return;
         }
 
-        if (this.circuitSwitch(start_link, node) === true) {
+        /*if (this.circuitSwitch(start_link, node) === true) {
             return;
+        }*/
+
+    }
+
+    circuitLED(start_link: string[], node: PeripheralNodeModel): boolean {
+
+        if (node.PERIPHAREL_TYPE === 3 || node.PERIPHAREL_TYPE === 4) {
+
+            // Extract LED line
+            let chip = PeripheralNodeModel.getChip(start_link[1]) as ChipNodeModel;
+            let linee = node.getOtherConnections(start_link[7]);
+
+            if (linee.length === 0) {
+                return false;
+            }
+
+            linee.push(start_link);
+            let line = [];
+            line.push(linee[1]);
+            line.push(linee[0]);
+            let total_resistance = 0.001;
+            let voltage = chip.getLogicValue(start_link[2]);
+            let direction = 0;
+
+            if (node.PERIPHAREL_TYPE === 3) {
+                total_resistance = total_resistance + (node as ResistanceNodeModel).resistance;
+            }
+
+            let next_node = PeripheralNodeModel.getPeripheral(line[1][5]);
+            while (next_node !== null) {
+                if (next_node.PERIPHAREL_TYPE === 1) {
+                    if (voltage === 0) {
+                        return false;
+                    }
+                    direction = 1;
+                    break;
+                }
+                if (next_node.PERIPHAREL_TYPE === 2) {
+                    if (voltage !== 0) {
+                        return false;
+                    }
+                    voltage = (next_node as VoltageNodeModel).voltage;
+                    break;
+                }
+                if (next_node.PERIPHAREL_TYPE === 3) {
+                    total_resistance = total_resistance + (next_node as ResistanceNodeModel).resistance;
+                    let next_link = next_node.getOtherConnections(line[line.length - 1][7]);
+
+                    if (next_link.length === 1) {
+                        next_node = PeripheralNodeModel.getPeripheral(next_link[0][5]);
+                        line.push(next_link[0]);
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                else if (next_node.PERIPHAREL_TYPE === 4) {
+                    let next_link = next_node.getOtherConnections(line[line.length - 1][7]);
+
+                    if (next_link.length === 1) {
+                        next_node = PeripheralNodeModel.getPeripheral(next_link[0][5]);
+                        line.push(next_link[0]);
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                else {
+                    return false;
+                }
+            }
+
+            // Process LED line
+            let current = voltage / total_resistance;
+            for (let i = 0; i < line.length; i ++) {
+                let current_node = PeripheralNodeModel.getPeripheral(line[i][5]);
+                if (current_node !== null && current_node.PERIPHAREL_TYPE === 4) {
+
+                    if ((current_node as LEDNodeModel).direction !== direction) {
+
+                        return false;
+                    }
+
+                    (current_node as LEDNodeModel).paint(current);        
+                }
+            }
+
+            return true;
+
         }
 
+        return false;
     }
 
     circuitUltraSonic(start_link: string[], node: PeripheralNodeModel): boolean {
