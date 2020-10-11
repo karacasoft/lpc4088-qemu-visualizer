@@ -4,6 +4,8 @@ import UltraSonicPortModel from '../Ports/UltraSonicPortModel';
 
 export default class UltraSonicNodeModel extends PeripheralNodeModel {
 
+    static ObstacleDistance: number = 1;
+
     constructor(locked: boolean, x: number, y: number, model: DiagramModel) {
         super({ name: "UltraSonic", color: "rgb(0, 96, 255)" });
         this.addOutPort("Vcc");

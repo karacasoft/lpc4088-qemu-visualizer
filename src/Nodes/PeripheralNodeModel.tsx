@@ -7,7 +7,8 @@ enum Peripheral_Type {
     Resistance,
     LED,
     UltraSonic,
-    Switch
+    Switch,
+    LDR
 }
 */
 export default class PeripheralNodeModel extends DefaultNodeModel {
@@ -71,6 +72,19 @@ export default class PeripheralNodeModel extends DefaultNodeModel {
         connect.push(link.getSourcePort().getName());
         connect.push(link.getSourcePort().getID());
         return connect;
+    }
+
+    static linkConnect(links: {[id: string]: LinkModel;}, node_id: string, port_ID: string, connections: string[][]) {
+        for (let link of Object.values(links)) {
+            if (link.getSourcePort() !== null && link.getTargetPort() !== null && link.getSourcePort().getID() !== port_ID && link.getTargetPort().getID() !== port_ID) {
+                if (link.getSourcePort().getNode().getID() === node_id) {
+                    connections.push(PeripheralNodeModel.linkSourceTarget(link));
+                }
+                else {
+                    connections.push(PeripheralNodeModel.linkTargetSource(link));
+                }
+            }
+        }
     }
 
 } 

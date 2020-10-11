@@ -67,6 +67,9 @@ export default class LEDNodeModel extends PeripheralNodeModel {
         let connections: string[][] = [];
 
         let links_left = this.getInPorts()[0].getLinks();
+
+        PeripheralNodeModel.linkConnect(links_left, this.getID(), port_ID, connections);
+
         for (let link of Object.values(links_left)) {
             if (link.getSourcePort() !== null && link.getTargetPort() !== null && link.getSourcePort().getID() !== port_ID && link.getTargetPort().getID() !== port_ID) {
                 if (link.getSourcePort().getNode().getID() === this.getID()) {

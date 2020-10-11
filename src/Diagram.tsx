@@ -1,6 +1,7 @@
 import React from 'react';
 
 import createEngine, {
+    DiagramEngine,
     DiagramModel,
 } from '@projectstorm/react-diagrams';
 
@@ -17,46 +18,86 @@ import SimulateNodeModel from './Nodes/SimulateNodeModel';
 import UltraSonicNodeModel from './Nodes/UltraSonicNodeModel';
 import SwitchNodeModel from './Nodes/SwitchNodeModel';
 
-let engine = createEngine({ registerDefaultZoomCanvasAction: false });
-const model = new DiagramModel();
+interface MyProps {
+    
+}
+  
+interface MyState {
+    ultraSonic: number
+}
 
-const LINES = [10, 80, 150];
+export default class CircuitDisplay extends React.Component<MyProps, MyState> {
 
-// Set peripherals
-model.addNode(new GroundNodeModel(true, 10, LINES[0], model));
-model.addNode(new VoltageNodeModel(true, 110, LINES[0], model, 3.3));
-model.addNode(new ResistanceNodeModel(true, 210, LINES[0], model, 1000));
+    engine: DiagramEngine;
 
-model.addNode(new LEDNodeModel(0, true, 10, LINES[1], model, "R"));
-model.addNode(new LEDNodeModel(1, true, 95, LINES[1], model, "R"));
-model.addNode(new LEDNodeModel(0, true, 180, LINES[1], model, "G"));
-model.addNode(new LEDNodeModel(1, true, 265, LINES[1], model, "G"));
-model.addNode(new LEDNodeModel(0, true, 350, LINES[1], model, "B"));
-model.addNode(new LEDNodeModel(1, true, 435, LINES[1], model, "B"));
+    constructor(props: any) {
+        // React preparation \\
+        super(props);
+        this.state = {ultraSonic: 1};
+        this.handleSubmitUltraSonic = this.handleSubmitUltraSonic.bind(this);
+        this.handleChangeUltraSonic = this.handleChangeUltraSonic.bind(this);
 
-model.addNode(new UltraSonicNodeModel(true, 10, LINES[2], model));
-model.addNode(new SwitchNodeModel(true, 85, LINES[2], model));
+        // Canvas Preparation \\
+        let engine = createEngine({ registerDefaultZoomCanvasAction: false });
+        const model = new DiagramModel();
 
-// Set chip
-model.addNode(new ChipNodeModel(true, 1000, LINES[0], model, 0));
-model.addNode(new ChipNodeModel(true, 1100, LINES[0], model, 1));
-model.addNode(new ChipNodeModel(true, 1200, LINES[0], model, 2));
-model.addNode(new ChipNodeModel(true, 1300, LINES[0], model, 3));
-model.addNode(new ChipNodeModel(true, 1400, LINES[0], model, 4));
-model.addNode(new ChipNodeModel(true, 1500, LINES[0], model, 5));
+        const LINES = [10, 80, 150];
 
-// Set buttons
-model.addNode(new SimulateNodeModel(1300, LINES[1], model));
+        // Set peripherals
+        model.addNode(new GroundNodeModel(true, 10, LINES[0], model));
+        model.addNode(new VoltageNodeModel(true, 110, LINES[0], model, 3.3));
+        model.addNode(new ResistanceNodeModel(true, 210, LINES[0], model, 1000));
 
-engine.setModel(model);
+        model.addNode(new LEDNodeModel(0, true, 10, LINES[1], model, "R"));
+        model.addNode(new LEDNodeModel(1, true, 95, LINES[1], model, "R"));
+        model.addNode(new LEDNodeModel(0, true, 180, LINES[1], model, "G"));
+        model.addNode(new LEDNodeModel(1, true, 265, LINES[1], model, "G"));
+        model.addNode(new LEDNodeModel(0, true, 350, LINES[1], model, "B"));
+        model.addNode(new LEDNodeModel(1, true, 435, LINES[1], model, "B"));
 
-export default class CircuitDisplay extends React.Component {
+        model.addNode(new UltraSonicNodeModel(true, 10, LINES[2], model));
+        model.addNode(new SwitchNodeModel(true, 85, LINES[2], model));
+
+        // Set chip
+        model.addNode(new ChipNodeModel(true, 1000, LINES[0], model, 0));
+        model.addNode(new ChipNodeModel(true, 1100, LINES[0], model, 1));
+        model.addNode(new ChipNodeModel(true, 1200, LINES[0], model, 2));
+        model.addNode(new ChipNodeModel(true, 1300, LINES[0], model, 3));
+        model.addNode(new ChipNodeModel(true, 1400, LINES[0], model, 4));
+        model.addNode(new ChipNodeModel(true, 1500, LINES[0], model, 5));
+
+        // Set buttons
+        model.addNode(new SimulateNodeModel(1300, LINES[1], model));
+
+        engine.setModel(model);
+        this.engine = engine;
+    }
+
+    handleChangeUltraSonic(event: any) {
+        this.setState({ultraSonic: event.target.value});
+    }
+
+    handleSubmitUltraSonic(event: any) {
+        UltraSonicNodeModel.ObstacleDistance = this.state.ultraSonic;
+        event.preventDefault();
+    }
 
     render() {
-        return (<CanvasWidget
-            engine={engine}
-            className={"diagram"}
-        />);
+        return (
+            <div>
+                <CanvasWidget
+                engine={this.engine}
+                className={"diagram"}
+                />
+                <form onSubmit={this.handleSubmitUltraSonic}>
+                    <label>
+                        Obstacle Distance (mm):&nbsp;
+                        <input type="number" name="name" min="1" max="10000" value={this.state.ultraSonic} onChange={this.handleChangeUltraSonic} />
+                    </label>
+                    <input type="submit" value="Set For Ultrasonic Sensor" />
+                </form>
+            </div>
+        );
     }
 
 }
