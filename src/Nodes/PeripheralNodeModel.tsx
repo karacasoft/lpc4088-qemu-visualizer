@@ -8,7 +8,8 @@ enum Peripheral_Type {
     LED,
     UltraSonic,
     Switch,
-    LDR
+    LDR,
+    VoltagePot
 }
 */
 export default class PeripheralNodeModel extends DefaultNodeModel {
@@ -74,14 +75,32 @@ export default class PeripheralNodeModel extends DefaultNodeModel {
         return connect;
     }
 
-    static linkConnect(links: {[id: string]: LinkModel;}, node_id: string, port_ID: string, connections: string[][]) {
+    static linkConnect(links: {[id: string]: LinkModel;}, node_id: string, port_id: string, connections: string[][]) {
         for (let link of Object.values(links)) {
-            if (link.getSourcePort() !== null && link.getTargetPort() !== null && link.getSourcePort().getID() !== port_ID && link.getTargetPort().getID() !== port_ID) {
+            if (link.getSourcePort() !== null && link.getTargetPort() !== null && link.getSourcePort().getID() !== port_id && link.getTargetPort().getID() !== port_id) {
                 if (link.getSourcePort().getNode().getID() === node_id) {
-                    connections.push(PeripheralNodeModel.linkSourceTarget(link));
+                    let connect: string[] = [];
+                    connect.push((link.getSourcePort().getNode() as PeripheralNodeModel).getName());
+                    connect.push(link.getSourcePort().getNode().getID());
+                    connect.push(link.getSourcePort().getName());
+                    connect.push(link.getSourcePort().getID());
+                    connect.push((link.getTargetPort().getNode() as PeripheralNodeModel).getName());
+                    connect.push(link.getTargetPort().getNode().getID());
+                    connect.push(link.getTargetPort().getName());
+                    connect.push(link.getTargetPort().getID());
+                    connections.push(connect);
                 }
                 else {
-                    connections.push(PeripheralNodeModel.linkTargetSource(link));
+                    let connect: string[] = [];
+                    connect.push((link.getTargetPort().getNode() as PeripheralNodeModel).getName());
+                    connect.push(link.getTargetPort().getNode().getID());
+                    connect.push(link.getTargetPort().getName());
+                    connect.push(link.getTargetPort().getID());
+                    connect.push((link.getSourcePort().getNode() as PeripheralNodeModel).getName());
+                    connect.push(link.getSourcePort().getNode().getID());
+                    connect.push(link.getSourcePort().getName());
+                    connect.push(link.getSourcePort().getID());
+                    connections.push(connect);
                 }
             }
         }

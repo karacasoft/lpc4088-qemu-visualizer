@@ -50,5 +50,9 @@ export default class ChipNodeModel extends PeripheralNodeModel {
     getLogicValue(port_name: string): number {
         return this.pin_values[Number(port_name)];
     }
+
+    setLogicValue(port_name: string, value: number) {
+        this.pin_values[Number(port_name)] = value;
+    }
     
 } 

@@ -1,5 +1,6 @@
 import { DiagramModel } from '@projectstorm/react-diagrams';
 import ChipNodeModel from './ChipNodeModel';
+import LDRNodeModel from './LDRNodeModel';
 import LEDNodeModel from './LEDNodeModel';
 import PeripheralNodeModel from './PeripheralNodeModel';
 import ResistanceNodeModel from './ResistanceNodeModel';
@@ -92,6 +93,10 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
         }
 
         if (this.circuitUltraSonic(start_link, node) === true) {
+            return;
+        }
+
+        if (this.circuitLDR(start_link, node) === true) {
             return;
         }
 
@@ -194,11 +199,10 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
     circuitUltraSonic(start_link: string[], node: PeripheralNodeModel): boolean {
         
         if (node.PERIPHAREL_TYPE === 5 && start_link[6] === "Trig") {
-            let chip = PeripheralNodeModel.getChip(start_link[1]) as ChipNodeModel;
-            let ultrasonic = node as UltraSonicNodeModel;
-            let links = ultrasonic.getOtherConnections(start_link[6]);
+            // let chip = PeripheralNodeModel.getChip(start_link[1]) as ChipNodeModel;
+            let links = node.getOtherConnections(start_link[6]);
 
-            if (links.length !== 4) {
+            if (links.length !== 3) {
                 return false;
             }
 
@@ -207,18 +211,18 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
                 return false;
             }
 
-            let node_ground = PeripheralNodeModel.getPeripheral(links[3][5]);
-            if (node_ground === null || node_ground.PERIPHAREL_TYPE !== 1) {
-                return false;
-            }
-
-            let node_chip = PeripheralNodeModel.getChip(links[2][5]);
+            let node_chip = PeripheralNodeModel.getChip(links[1][5]);
             if (node_chip === null || node_chip.PERIPHAREL_TYPE !== 0) {
                 return false;
             }
 
+            let node_ground = PeripheralNodeModel.getPeripheral(links[2][5]);
+            if (node_ground === null || node_ground.PERIPHAREL_TYPE !== 1) {
+                return false;
+            }
+
             // TODO QEMU
-            console.log(links);
+            console.log(UltraSonicNodeModel.ObstacleDistance);
             return true;
         }
 
@@ -348,5 +352,118 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
 
         return false;
     }
-    
+
+    circuitLDR(start_link: string[], node: PeripheralNodeModel): boolean {
+
+        if (node.PERIPHAREL_TYPE === 8 && start_link[6] === "Chip") {
+
+            if ((PeripheralNodeModel.getChip(start_link[1]) as ChipNodeModel).getLogicValue(start_link[2]) !== 0) {
+                return false;
+            }
+
+            let chip = PeripheralNodeModel.getChip(start_link[1]) as ChipNodeModel;
+            let links = node.getOtherConnections(start_link[7]);
+            let left_resistance = 0.001;
+            let right_resistance = 0.001;
+            let voltage = 0;
+            console.log(links);
+            if (links.length !== 2) {
+                return false;
+            }
+
+            // Voltage line
+            let line_voltage = [];
+            line_voltage.push(links[0]);
+            let next_node = PeripheralNodeModel.getPeripheral(line_voltage[0][5]);
+
+            while(next_node !== null) {
+                if (next_node.PERIPHAREL_TYPE === 2) {
+                    voltage = (next_node as VoltageNodeModel).voltage;
+                    console.log(1);
+                    break;
+                }
+                if (next_node.PERIPHAREL_TYPE === 3) {
+                    left_resistance = left_resistance + (next_node as ResistanceNodeModel).resistance;
+                    let next_link = next_node.getOtherConnections(line_voltage[line_voltage.length - 1][7]);
+                    if (next_link.length === 1) {
+                        next_node = PeripheralNodeModel.getPeripheral(next_link[0][5]);
+                        line_voltage.push(next_link[0]);
+                        console.log(2);
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                else if (next_node.PERIPHAREL_TYPE === 7) {
+                    left_resistance = left_resistance + LDRNodeModel.calculateResistance((next_node as LDRNodeModel).direction);
+                    let next_link = next_node.getOtherConnections(line_voltage[line_voltage.length - 1][7]);
+                    if (next_link.length === 1) {
+                        next_node = PeripheralNodeModel.getPeripheral(next_link[0][5]);
+                        line_voltage.push(next_link[0]);
+                        console.log(3);
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                else {
+                    return false;
+                }
+            }
+            console.log(line_voltage);
+            // Ground line
+            let line_ground = [];
+            line_ground.push(links[1]);
+            next_node = PeripheralNodeModel.getPeripheral(line_ground[0][5]);
+
+            while(next_node !== null) {
+                if (next_node.PERIPHAREL_TYPE === 1) {
+                    break;
+                }
+                if (next_node.PERIPHAREL_TYPE === 3) {
+                    right_resistance = right_resistance + (next_node as ResistanceNodeModel).resistance;
+                    let next_link = next_node.getOtherConnections(line_ground[line_ground.length - 1][7]);
+                    if (next_link.length === 1) {
+                        next_node = PeripheralNodeModel.getPeripheral(next_link[0][5]);
+                        line_ground.push(next_link[0]);
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                else if (next_node.PERIPHAREL_TYPE === 7) {
+                    right_resistance = right_resistance + LDRNodeModel.calculateResistance((next_node as LDRNodeModel).direction);
+                    let next_link = next_node.getOtherConnections(line_ground[line_ground.length - 1][7]);
+                    if (next_link.length === 1) {
+                        next_node = PeripheralNodeModel.getPeripheral(next_link[0][5]);
+                        line_ground.push(next_link[0]);
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                else {
+                    return false;
+                }
+            }
+            console.log(line_ground);
+            let total_resistance = left_resistance + right_resistance;
+            let pot_voltage = voltage / total_resistance * right_resistance;
+
+            console.log(voltage);
+            console.log(left_resistance);
+            console.log(right_resistance);
+            console.log(total_resistance);
+            console.log(pot_voltage);
+
+            (PeripheralNodeModel.getChip(start_link[1]) as ChipNodeModel).setLogicValue(start_link[2], pot_voltage);
+
+            return true;
+            
+        }
+
+        return false;
+
+    }
+
 } 

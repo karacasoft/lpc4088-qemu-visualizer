@@ -17,6 +17,8 @@ import ResistanceNodeModel from './Nodes/ResistanceNodeModel';
 import SimulateNodeModel from './Nodes/SimulateNodeModel';
 import UltraSonicNodeModel from './Nodes/UltraSonicNodeModel';
 import SwitchNodeModel from './Nodes/SwitchNodeModel';
+import LDRNodeModel from './Nodes/LDRNodeModel';
+import VoltagePotNodeModel from './Nodes/VoltagePotNodeModel';
 
 interface MyProps {
     
@@ -24,6 +26,7 @@ interface MyProps {
   
 interface MyState {
     ultraSonic: number
+    light: number
 }
 
 export default class CircuitDisplay extends React.Component<MyProps, MyState> {
@@ -33,9 +36,11 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
     constructor(props: any) {
         // React preparation \\
         super(props);
-        this.state = {ultraSonic: 1};
+        this.state = {ultraSonic: 1, light: 1};
         this.handleSubmitUltraSonic = this.handleSubmitUltraSonic.bind(this);
         this.handleChangeUltraSonic = this.handleChangeUltraSonic.bind(this);
+        this.handleSubmitLight = this.handleSubmitLight.bind(this);
+        this.handleChangeLight = this.handleChangeLight.bind(this);
 
         // Canvas Preparation \\
         let engine = createEngine({ registerDefaultZoomCanvasAction: false });
@@ -54,9 +59,12 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
         model.addNode(new LEDNodeModel(1, true, 265, LINES[1], model, "G"));
         model.addNode(new LEDNodeModel(0, true, 350, LINES[1], model, "B"));
         model.addNode(new LEDNodeModel(1, true, 435, LINES[1], model, "B"));
+        model.addNode(new LDRNodeModel(0, true, 520, LINES[1], model));
+        model.addNode(new LDRNodeModel(1, true, 605, LINES[1], model));
 
         model.addNode(new UltraSonicNodeModel(true, 10, LINES[2], model));
         model.addNode(new SwitchNodeModel(true, 85, LINES[2], model));
+        model.addNode(new VoltagePotNodeModel(true, 205, LINES[2], model));
 
         // Set chip
         model.addNode(new ChipNodeModel(true, 1000, LINES[0], model, 0));
@@ -82,6 +90,15 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
         event.preventDefault();
     }
 
+    handleChangeLight(event: any) {
+        this.setState({light: event.target.value});
+    }
+
+    handleSubmitLight(event: any) {
+        LDRNodeModel.Light = this.state.light;
+        event.preventDefault();
+    }
+
     render() {
         return (
             <div>
@@ -95,6 +112,13 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
                         <input type="number" name="name" min="1" max="10000" value={this.state.ultraSonic} onChange={this.handleChangeUltraSonic} />
                     </label>
                     <input type="submit" value="Set For Ultrasonic Sensor" />
+                </form>
+                <form onSubmit={this.handleSubmitLight}>
+                    <label>
+                        Light (lm):&nbsp;
+                        <input type="number" name="name" min="1" max="100000" value={this.state.light} onChange={this.handleChangeLight} />
+                    </label>
+                    <input type="submit" value="Set For Light" />
                 </form>
             </div>
         );

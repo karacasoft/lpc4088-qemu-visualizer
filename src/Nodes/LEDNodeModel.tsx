@@ -63,35 +63,14 @@ export default class LEDNodeModel extends PeripheralNodeModel {
         return port;
     }
 
-    getOtherConnections(port_ID: string): string[][] {
+    getOtherConnections(port_id: string): string[][] {
         let connections: string[][] = [];
 
         let links_left = this.getInPorts()[0].getLinks();
-
-        PeripheralNodeModel.linkConnect(links_left, this.getID(), port_ID, connections);
-
-        for (let link of Object.values(links_left)) {
-            if (link.getSourcePort() !== null && link.getTargetPort() !== null && link.getSourcePort().getID() !== port_ID && link.getTargetPort().getID() !== port_ID) {
-                if (link.getSourcePort().getNode().getID() === this.getID()) {
-                    connections.push(PeripheralNodeModel.linkSourceTarget(link));
-                }
-                else {
-                    connections.push(PeripheralNodeModel.linkTargetSource(link));
-                }
-            }
-        }
+        PeripheralNodeModel.linkConnect(links_left, this.getID(), port_id, connections);
 
         let links_right = this.getOutPorts()[0].getLinks();
-        for (let link of Object.values(links_right)) {
-            if (link.getSourcePort() !== null && link.getTargetPort() !== null && link.getSourcePort().getID() !== port_ID && link.getTargetPort().getID() !== port_ID) {
-                if (link.getSourcePort().getNode().getID() === this.getID()) {
-                    connections.push(PeripheralNodeModel.linkSourceTarget(link));
-                }
-                else {
-                    connections.push(PeripheralNodeModel.linkTargetSource(link));
-                }
-            }
-        }
+        PeripheralNodeModel.linkConnect(links_right, this.getID(), port_id, connections);
 
         return connections;
     }

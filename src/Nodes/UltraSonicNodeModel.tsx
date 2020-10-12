@@ -46,52 +46,16 @@ export default class UltraSonicNodeModel extends PeripheralNodeModel {
         let connections: string[][] = [];
 
         let links_Vcc = this.getOutPorts()[0].getLinks();
-        for (let link of Object.values(links_Vcc)) {
-            if (link.getSourcePort() !== null && link.getTargetPort() !== null) {
-                if (link.getSourcePort().getNode().getID() === this.getID()) {
-                    connections.push(PeripheralNodeModel.linkSourceTarget(link));
-                }
-                else {
-                    connections.push(PeripheralNodeModel.linkTargetSource(link));
-                }
-            }
-        }
+        PeripheralNodeModel.linkConnect(links_Vcc, this.getID(), port_id, connections);
 
-        let links_Trig = this.getOutPorts()[1].getLinks();
-        for (let link of Object.values(links_Trig)) {
-            if (link.getSourcePort() !== null && link.getTargetPort() !== null) {
-                if (link.getSourcePort().getNode().getID() === this.getID()) {
-                    connections.push(PeripheralNodeModel.linkSourceTarget(link));
-                }
-                else {
-                    connections.push(PeripheralNodeModel.linkTargetSource(link));
-                }
-            }
-        }
+        /*let links_Trig = this.getOutPorts()[1].getLinks();
+        PeripheralNodeModel.linkConnect(links_Trig, this.getID(), port_id, connections);*/
 
         let links_Echo = this.getOutPorts()[2].getLinks();
-        for (let link of Object.values(links_Echo)) {
-            if (link.getSourcePort() !== null && link.getTargetPort() !== null) {
-                if (link.getSourcePort().getNode().getID() === this.getID()) {
-                    connections.push(PeripheralNodeModel.linkSourceTarget(link));
-                }
-                else {
-                    connections.push(PeripheralNodeModel.linkTargetSource(link));
-                }
-            }
-        }
+        PeripheralNodeModel.linkConnect(links_Echo, this.getID(), port_id, connections);
 
         let links_GND = this.getOutPorts()[3].getLinks();
-        for (let link of Object.values(links_GND)) {
-            if (link.getSourcePort() !== null && link.getTargetPort() !== null) {
-                if (link.getSourcePort().getNode().getID() === this.getID()) {
-                    connections.push(PeripheralNodeModel.linkSourceTarget(link));
-                }
-                else {
-                    connections.push(PeripheralNodeModel.linkTargetSource(link));
-                }
-            }
-        }
+        PeripheralNodeModel.linkConnect(links_GND, this.getID(), port_id, connections);
 
         return connections;
     }
