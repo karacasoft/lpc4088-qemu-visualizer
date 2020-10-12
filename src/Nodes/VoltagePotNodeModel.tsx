@@ -5,7 +5,7 @@ import VoltagePotPortModel from '../Ports/VoltagePotPortModel';
 export default class VoltagePotNodeModel extends PeripheralNodeModel {
 
     constructor(locked: boolean, x: number, y: number, model: DiagramModel) {
-        super({ name: "Voltage Pot", color: "rgb(0, 192, 192)" });
+        super({ name: "Voltage Pot", color: "rgb(64, 192, 128)" });
         this.addInPort("Voltage");
         this.addOutPort("Chip");
         this.addOutPort("Ground");

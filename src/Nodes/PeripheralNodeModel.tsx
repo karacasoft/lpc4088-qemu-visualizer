@@ -9,7 +9,8 @@ enum Peripheral_Type {
     UltraSonic,
     Switch,
     LDR,
-    VoltagePot
+    VoltagePot,
+    Hand
 }
 */
 export default class PeripheralNodeModel extends DefaultNodeModel {

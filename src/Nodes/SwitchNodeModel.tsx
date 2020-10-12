@@ -5,11 +5,11 @@ import SwitchPortModel from '../Ports/SwitchPortModel';
 export default class SwitchNodeModel extends PeripheralNodeModel {
 
     constructor(locked: boolean, x: number, y: number, model: DiagramModel) {
-        super({ name: "Switch", color: "rgb(128, 96, 64)" });
-        this.addInPort("0");
-        this.addInPort("1");
-        this.addOutPort("Selector");
-        this.addOutPort("Voltage");
+        super({ name: "Switch", color: "rgb(255, 64, 128)" });
+        this.addInPort("Voltage");
+        this.addInPort("Value");
+        this.addOutPort("Chip");
+        this.addOutPort("Ground");
         this.setPosition(x, y);
         if (locked === true) {
             this.setLocked();
@@ -43,30 +43,15 @@ export default class SwitchNodeModel extends PeripheralNodeModel {
     getOtherConnections(port_id: string): string[][] {
         let connections: string[][] = [];
 
-        let links_Selector = this.getOutPorts()[0].getLinks();
-        PeripheralNodeModel.linkConnect(links_Selector, this.getID(), port_id, connections);
-
-        let links_Voltage = this.getOutPorts()[1].getLinks();
+        let links_Voltage = this.getInPorts()[0].getLinks();
         PeripheralNodeModel.linkConnect(links_Voltage, this.getID(), port_id, connections);
 
-        if (connections.length === 1) {
-            connections.push([]);
-        }
+        let links_Value = this.getInPorts()[1].getLinks();
+        PeripheralNodeModel.linkConnect(links_Value, this.getID(), port_id, connections);
 
-        let links_0 = this.getInPorts()[0].getLinks();
-        PeripheralNodeModel.linkConnect(links_0, this.getID(), port_id, connections);
+        let links_Ground = this.getOutPorts()[1].getLinks();
+        PeripheralNodeModel.linkConnect(links_Ground, this.getID(), port_id, connections);
 
-        if (connections.length === 2) {
-            connections.push([]);
-        }
-
-        let links_1 = this.getInPorts()[1].getLinks();
-        PeripheralNodeModel.linkConnect(links_1, this.getID(), port_id, connections);
-
-        if (connections.length === 3) {
-            connections.push([]);
-        }
-        
         return connections;
     }
     

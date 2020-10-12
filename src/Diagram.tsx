@@ -19,6 +19,7 @@ import UltraSonicNodeModel from './Nodes/UltraSonicNodeModel';
 import SwitchNodeModel from './Nodes/SwitchNodeModel';
 import LDRNodeModel from './Nodes/LDRNodeModel';
 import VoltagePotNodeModel from './Nodes/VoltagePotNodeModel';
+import HandNodeModel from './Nodes/HandNodeModel';
 
 interface MyProps {
     
@@ -63,8 +64,10 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
         model.addNode(new LDRNodeModel(1, true, 605, LINES[1], model));
 
         model.addNode(new UltraSonicNodeModel(true, 10, LINES[2], model));
-        model.addNode(new SwitchNodeModel(true, 85, LINES[2], model));
-        model.addNode(new VoltagePotNodeModel(true, 205, LINES[2], model));
+        model.addNode(new VoltagePotNodeModel(true, 85, LINES[2], model));
+        model.addNode(new SwitchNodeModel(true, 235, LINES[2], model));
+        model.addNode(new HandNodeModel(0, true, 380, LINES[2], model));
+        model.addNode(new HandNodeModel(1, true, 435, LINES[2], model));
 
         // Set chip
         model.addNode(new ChipNodeModel(true, 1000, LINES[0], model, 0));

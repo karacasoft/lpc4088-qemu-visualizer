@@ -6,6 +6,7 @@ export default class ChipNodeModel extends PeripheralNodeModel {
 
     pin_values: number[] = [];
 
+
     constructor(locked: boolean, x: number, y: number, model: DiagramModel, part: number) {
         super({ name: "LPC4088 Port " + part, color: "rgb(255, 0, 64)" });
         this.setPosition(x, y);
@@ -21,7 +22,7 @@ export default class ChipNodeModel extends PeripheralNodeModel {
                                 node.addInPort(String(i));
                                 node.pin_values.push(0);
                             }
-                            for (let i = 15; i <= 31; i ++) {
+                            for (let i = 16; i <= 31; i ++) {
                                 node.addInPort(String(i));
                                 node.pin_values.push(5);
                             }

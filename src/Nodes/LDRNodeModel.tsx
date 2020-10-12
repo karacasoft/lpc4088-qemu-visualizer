@@ -9,7 +9,7 @@ export default class LDRNodeModel extends PeripheralNodeModel {
     static Light = 1;
 
     constructor(direction: number, locked: boolean, x: number, y: number, model: DiagramModel) {
-        super({ name: "LDR", color: "rgb(192, 96, 0)" });
+        super({ name: "LDR", color: "rgb(255, 128, 0)" });
         if (direction === 0) {
             this.addInPort("+");
             this.addOutPort("-");
