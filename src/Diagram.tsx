@@ -54,14 +54,14 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
         model.addNode(new VoltageNodeModel(true, 110, LINES[0], model, 3.3));
         model.addNode(new ResistanceNodeModel(true, 210, LINES[0], model, 1000));
 
-        model.addNode(new LEDNodeModel(0, true, 10, LINES[1], model, "R"));
-        model.addNode(new LEDNodeModel(1, true, 95, LINES[1], model, "R"));
-        model.addNode(new LEDNodeModel(0, true, 180, LINES[1], model, "G"));
-        model.addNode(new LEDNodeModel(1, true, 265, LINES[1], model, "G"));
-        model.addNode(new LEDNodeModel(0, true, 350, LINES[1], model, "B"));
-        model.addNode(new LEDNodeModel(1, true, 435, LINES[1], model, "B"));
-        model.addNode(new LDRNodeModel(0, true, 520, LINES[1], model));
-        model.addNode(new LDRNodeModel(1, true, 605, LINES[1], model));
+        model.addNode(new LEDNodeModel(true, true, 10, LINES[1], model, "R"));
+        model.addNode(new LEDNodeModel(false, true, 95, LINES[1], model, "R"));
+        model.addNode(new LEDNodeModel(true, true, 180, LINES[1], model, "G"));
+        model.addNode(new LEDNodeModel(false, true, 265, LINES[1], model, "G"));
+        model.addNode(new LEDNodeModel(true, true, 350, LINES[1], model, "B"));
+        model.addNode(new LEDNodeModel(false, true, 435, LINES[1], model, "B"));
+        model.addNode(new LDRNodeModel(true, true, 520, LINES[1], model));
+        model.addNode(new LDRNodeModel(false, true, 605, LINES[1], model));
 
         model.addNode(new UltraSonicNodeModel(true, 10, LINES[2], model));
         model.addNode(new VoltagePotNodeModel(true, 85, LINES[2], model));

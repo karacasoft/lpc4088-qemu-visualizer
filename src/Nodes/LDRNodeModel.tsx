@@ -4,13 +4,13 @@ import LDRPortModel from '../Ports/LDRPortModel';
 
 export default class LDRNodeModel extends PeripheralNodeModel {
 
-    direction: number;
+    direction: boolean;
     static MAX_CURRENT = 0.005;
     static Light = 1;
 
-    constructor(direction: number, locked: boolean, x: number, y: number, model: DiagramModel) {
+    constructor(direction: boolean, locked: boolean, x: number, y: number, model: DiagramModel) {
         super({ name: "LDR", color: "rgb(255, 128, 0)" });
-        if (direction === 0) {
+        if (direction === true) {
             this.addInPort("+");
             this.addOutPort("-");
         }
@@ -61,8 +61,8 @@ export default class LDRNodeModel extends PeripheralNodeModel {
         return connections;
     }
 
-    static calculateResistance(direction: number): number {
-        if (direction === 0) {
+    static calculateResistance(direction: boolean): number {
+        if (direction === true) {
             return 20000000 / LDRNodeModel.Light * (-199 * LDRNodeModel.Light / 19999800 + 19999999 / 19999800);
         }
         else {

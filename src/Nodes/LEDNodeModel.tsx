@@ -5,10 +5,10 @@ import LEDPortModel from '../Ports/LEDPortModel';
 export default class LEDNodeModel extends PeripheralNodeModel {
 
     colour: string;
-    direction: number;
+    direction: boolean;
     static MAX_CURRENT = 0.005;
 
-    constructor(direction: number, locked: boolean, x: number, y: number, model: DiagramModel, colour: string) {
+    constructor(direction: boolean, locked: boolean, x: number, y: number, model: DiagramModel, colour: string) {
         if (locked === true) {
             if (colour === "R") {
                 super({ name: "LED", color: "rgb(192, 0, 0)" });
@@ -23,7 +23,7 @@ export default class LEDNodeModel extends PeripheralNodeModel {
         else  {
             super({ name: "LED", color: "rgb(192, 192, 192)" });
         }
-        if (direction === 0) {
+        if (direction === true) {
             this.addInPort("+");
             this.addOutPort("-");
         }
@@ -76,7 +76,7 @@ export default class LEDNodeModel extends PeripheralNodeModel {
     }
 
     paint(current: number) {
-        let value = (current / 0.005) * 255;
+        let value = (current / 0.0075) * 255;
         if (value > 255) {
             value = 255;
         }
