@@ -20,6 +20,7 @@ import SwitchNodeModel from './Nodes/SwitchNodeModel';
 import LDRNodeModel from './Nodes/LDRNodeModel';
 import VoltagePotNodeModel from './Nodes/VoltagePotNodeModel';
 import HandNodeModel from './Nodes/HandNodeModel';
+import SevenSegmentNodeModel from './Nodes/SevenSegmentNodeModel';
 
 interface MyProps {
     
@@ -79,6 +80,8 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
 
         // Set buttons
         model.addNode(new SimulateNodeModel(1300, LINES[1], model));
+        model.addNode(new SevenSegmentNodeModel(true, 600, LINES[0], model));
+        model.addNode(new SevenSegmentNodeModel(false, 730, LINES[0], model));
 
         engine.setModel(model);
         this.engine = engine;

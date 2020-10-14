@@ -7,7 +7,7 @@ export default class SwitchNodeModel extends PeripheralNodeModel {
     constructor(locked: boolean, x: number, y: number, model: DiagramModel) {
         super({ name: "Switch", color: "rgb(255, 64, 128)" });
         this.addInPort("Voltage");
-        this.addInPort("Value");
+        this.addInPort("Select");
         this.addOutPort("Chip");
         this.addOutPort("Ground");
         this.setPosition(x, y);

@@ -8,10 +8,10 @@ export default class HandNodeModel extends PeripheralNodeModel {
 
     constructor(value: number, locked: boolean, x: number, y: number, model: DiagramModel) {
         if (value === 0) {
-            super({ name: "Hand", color: "rgb(192, 128, 64)" });
+            super({ name: "Select", color: "rgb(192, 128, 64)" });
         }
         else {
-            super({ name: "Hand", color: "rgb(128, 192, 64)" });
+            super({ name: "Select", color: "rgb(128, 192, 64)" });
         }
         this.addOutPort(String(value));
         this.setPosition(x, y);
