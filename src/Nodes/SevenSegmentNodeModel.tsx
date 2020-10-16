@@ -1,4 +1,4 @@
-import { DiagramModel, DefaultLinkModel, DefaultNodeModel } from '@projectstorm/react-diagrams';
+import { DiagramModel, DefaultLinkModel } from '@projectstorm/react-diagrams';
 import GroundNodeModel from './GroundNodeModel';
 import LEDNodeModel from './LEDNodeModel';
 import PeripheralNodeModel from './PeripheralNodeModel';

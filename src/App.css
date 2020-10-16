@@ -1,16 +1,43 @@
+#root {
+  height: 100vh;
+}
+
 .diagram {
-  width: 1900px;
+  width: 1600px;
   height: 800px;
 }
 
-#root {
-  height: 100vh;
+.canvas {
+  position: absolute;
+}
+
+.info {
+  position: absolute;
+  left: 1580px;
+  top: 50px;
+  width: 330px;
+  height: 330px;
+  overflow-y: scroll;
+}
+
+.message {
+  position: absolute;
+  left: 600px;
+  top: 800px;
+  width: 600px;
+  height: 200px;
+}
+
+.bottom {
+  position: absolute;
+  top: 800px;
+  left: 100px;
 }
 
 .App {
   margin: 0;
   padding: 0;
-  width: 1900px;
+  width: 1920px;
   height: 900px;
   text-align: center;
 }

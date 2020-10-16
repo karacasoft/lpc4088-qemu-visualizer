@@ -29,6 +29,8 @@ interface MyProps {
 interface MyState {
     ultraSonic: number
     light: number
+    message: string
+    info: string
 }
 
 export default class CircuitDisplay extends React.Component<MyProps, MyState> {
@@ -38,11 +40,18 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
     constructor(props: any) {
         // React preparation \\
         super(props);
-        this.state = {ultraSonic: 1, light: 1};
+        this.state = {ultraSonic: 1, light: 1, message: "", info: "All information will be displayed here."};
         this.handleSubmitUltraSonic = this.handleSubmitUltraSonic.bind(this);
         this.handleChangeUltraSonic = this.handleChangeUltraSonic.bind(this);
         this.handleSubmitLight = this.handleSubmitLight.bind(this);
         this.handleChangeLight = this.handleChangeLight.bind(this);
+        this.handleSubmitMessage = this.handleSubmitMessage.bind(this);
+        this.handleChangeMessage = this.handleChangeMessage.bind(this);
+        this.handleSubmitJoystickLeft = this.handleSubmitJoystickLeft.bind(this);
+        this.handleSubmitJoystickUp = this.handleSubmitJoystickUp.bind(this);
+        this.handleSubmitJoystickRight = this.handleSubmitJoystickRight.bind(this);
+        this.handleSubmitJoystickDown = this.handleSubmitJoystickDown.bind(this);
+        this.handleSubmitJoystickCenter = this.handleSubmitJoystickCenter.bind(this);
 
         // Canvas Preparation \\
         let engine = createEngine({ registerDefaultZoomCanvasAction: false });
@@ -105,27 +114,89 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
         event.preventDefault();
     }
 
+    handleChangeMessage(event: any) {
+        this.setState({message: event.target.value});
+    }
+
+    handleSubmitMessage(event: any) {
+        event.preventDefault();
+    }
+
+    handleSubmitJoystickLeft(event: any) {
+        event.preventDefault();
+    }
+
+    handleSubmitJoystickUp(event: any) {
+        event.preventDefault();
+    }
+
+    handleSubmitJoystickRight(event: any) {
+        event.preventDefault();
+    }
+
+    handleSubmitJoystickDown(event: any) {
+        event.preventDefault();
+    }
+
+    handleSubmitJoystickCenter(event: any) {
+        event.preventDefault();
+    }
+
     render() {
         return (
             <div>
-                <CanvasWidget
-                engine={this.engine}
-                className={"diagram"}
-                />
-                <form onSubmit={this.handleSubmitUltraSonic}>
+                <div className={"canvas"}>
+                    <CanvasWidget
+                    engine={this.engine}
+                    className={"diagram"}/>
+                </div>
+                <div className={"info"}>
+                    <p>
+                        {this.state.info}
+                    </p>
+                </div>
+                <div className={"message"}>
+                    <form onSubmit={this.handleSubmitMessage}>
                     <label>
-                        Obstacle Distance (mm):&nbsp;
-                        <input type="number" name="name" min="1" max="10000" value={this.state.ultraSonic} onChange={this.handleChangeUltraSonic} />
-                    </label>
-                    <input type="submit" value="Set For Ultrasonic Sensor" />
-                </form>
-                <form onSubmit={this.handleSubmitLight}>
-                    <label>
-                        Light (lm):&nbsp;
-                        <input type="number" name="name" min="1" max="100000" value={this.state.light} onChange={this.handleChangeLight} />
-                    </label>
-                    <input type="submit" value="Set For Light" />
-                </form>
+                            UART Message:&nbsp;
+                            <input type="text" name="name" size={40} maxLength={128} value={this.state.message} onChange={this.handleChangeMessage} />
+                        </label>
+                        <input type="submit" value="Send To UART" />
+                    </form>
+                    <br />
+                    <button onClick={this.handleSubmitJoystickLeft}>
+                        Joystick Left
+                    </button>
+                    <button onClick={this.handleSubmitJoystickUp}>
+                        Joystick Up
+                    </button>
+                    <button onClick={this.handleSubmitJoystickRight}>
+                        Joystick Right
+                    </button>
+                    <button onClick={this.handleSubmitJoystickDown}>
+                        Joystick Down
+                    </button>
+                    <button onClick={this.handleSubmitJoystickCenter}>
+                        Joystick Center
+                    </button>
+                </div>
+                <div className={"bottom"}>
+                    <form onSubmit={this.handleSubmitUltraSonic}>
+                        <label>
+                            Obstacle Distance (mm):&nbsp;
+                            <input type="number" name="name" min="1" max="10000" value={this.state.ultraSonic} onChange={this.handleChangeUltraSonic} />
+                        </label>
+                        <input type="submit" value="Set For Ultrasonic Sensor" />
+                    </form>
+                    <br />
+                    <form onSubmit={this.handleSubmitLight}>
+                        <label>
+                            Light (lm):&nbsp;
+                            <input type="number" name="name" min="1" max="100000" value={this.state.light} onChange={this.handleChangeLight} />
+                        </label>
+                        <input type="submit" value="Set For Light" />
+                    </form>
+                </div>
             </div>
         );
     }
