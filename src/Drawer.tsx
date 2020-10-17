@@ -9,6 +9,7 @@ const useStyles = makeStyles(theme => ({
 
 interface LPC4088VisualizerDrawerProps {
     open: boolean;
+    onClickItem: (id: string) => void;
     onClose: () => void;
 }
 
@@ -45,7 +46,7 @@ const list_options = [
     }
 ]
 
-function LPC4088VisualizerDrawer({ open, onClose }: LPC4088VisualizerDrawerProps) {
+function LPC4088VisualizerDrawer({ open, onClickItem, onClose }: LPC4088VisualizerDrawerProps) {
     const classes = useStyles();
     return (
         <React.Fragment>
@@ -58,7 +59,7 @@ function LPC4088VisualizerDrawer({ open, onClose }: LPC4088VisualizerDrawerProps
                     list_options.map(category => [
                         <Divider key={category.id + "-div"} />,
                         category.options.map((meta, index) => (
-                            <ListItem button key={meta.id}>
+                            <ListItem button key={meta.id} onClick={() => onClickItem(meta.id)}>
                                 <ListItemText primary={meta.text} /> 
                             </ListItem>
                         ))

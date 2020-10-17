@@ -52,10 +52,12 @@
     "lodash": "^4.17.20",
     "mini-css-extract-plugin": "0.9.0",
     "ml-matrix": "^6.5.1",
+    "node-loader": "^1.0.2",
     "optimize-css-assets-webpack-plugin": "5.0.3",
     "pathfinding": "^0.4.18",
     "paths-js": "^0.4.11",
     "pnp-webpack-plugin": "1.6.4",
+    "posix-mq": "^1.1.3",
     "postcss-flexbugs-fixes": "4.1.0",
     "postcss-loader": "3.0.0",
     "postcss-normalize": "8.0.1",
@@ -66,6 +68,7 @@
     "react-app-polyfill": "^1.0.6",
     "react-dev-utils": "^10.2.1",
     "react-dom": "^16.13.1",
+    "react-dropzone": "^11.2.0",
     "resize-observer-polyfill": "^1.5.1",
     "resolve": "1.15.0",
     "resolve-url-loader": "3.1.1",
@@ -83,9 +86,10 @@
   },
   "scripts": {
     "start": "node scripts/start.js",
-    "electron": "electron .",
-    "electron-dev": "node ./electron-dev-start.js",
-    "electron-pack": "npm run build && electron-packager . \"LPC4088 Visualizer\" --platform=linux --arch=x64 --out=./package",
+    "electron:build": "tsc -p tsconfig.electron.json",
+    "electron": "npm run electron:build && electron .",
+    "electron-dev": "npm run electron:build && node ./electron-dev-start.js",
+    "electron-pack": "npm run electron:build && npm run build && electron-packager . \"LPC4088 Visualizer\" --platform=linux --arch=x64 --out=./package",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js"
   },
@@ -107,7 +111,8 @@
   "devDependencies": {
     "electron": "^10.1.3",
     "electron-installer-snap": "^5.1.0",
-    "electron-packager": "^15.1.0"
+    "electron-packager": "^15.1.0",
+    "electron-rebuild": "^2.2.0"
   },
   "jest": {
     "roots": [

@@ -485,6 +485,10 @@ module.exports = function(webpackEnv) {
                 'sass-loader'
               ),
             },
+            {
+              test: /\.node$/,
+              loader: 'node-loader'
+            },
             // "file" loader makes sure those assets get served by WebpackDevServer.
             // When you `import` an asset, you get its (virtual) filename.
             // In production, they would get copied to the `build` folder.
@@ -649,10 +653,12 @@ module.exports = function(webpackEnv) {
           // The formatter is invoked directly in WebpackDevServerUtils during development
           formatter: isEnvProduction ? typescriptFormatter : undefined,
         }),
+
     ].filter(Boolean),
     // Some libraries import Node modules but don't use them in the browser.
     // Tell webpack to provide empty mocks for them so importing them works.
-    // node: {
+    node: {
+      __dirname: false,
     //   module: 'empty',
     //   dgram: 'empty',
     //   dns: 'mock',
@@ -661,7 +667,7 @@ module.exports = function(webpackEnv) {
     //   net: 'empty',
     //   tls: 'empty',
     //   child_process: 'empty',
-    // },
+    },
     // Turn off performance processing because we utilize
     // our own hints via the FileSizeReporter
     performance: false,

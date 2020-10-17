@@ -4,7 +4,7 @@ import HandPortModel from '../Ports/HandPortModel';
 
 export default class HandNodeModel extends PeripheralNodeModel {
 
-    value;
+    value: number;
 
     constructor(value: number, locked: boolean, x: number, y: number, model: DiagramModel) {
         if (value === 0) {
