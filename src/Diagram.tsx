@@ -23,24 +23,36 @@ import HandNodeModel from './Nodes/HandNodeModel';
 import SevenSegmentNodeModel from './Nodes/SevenSegmentNodeModel';
 
 interface MyProps {
-    
 }
   
 interface MyState {
-    ultraSonic: number
-    light: number
-    message: string
-    info: string
+    initialized: boolean;
+
+    ultraSonic: number;
+    light: number;
+    message: string;
+    info: string;
 }
+
+let model = new DiagramModel();
+
+export function getModel() { return model; }
 
 export default class CircuitDisplay extends React.Component<MyProps, MyState> {
 
-    engine: DiagramEngine;
+    engine: DiagramEngine = createEngine({ registerDefaultZoomCanvasAction: false });
 
     constructor(props: any) {
         // React preparation \\
         super(props);
-        this.state = {ultraSonic: 1, light: 1, message: "", info: "All information will be displayed here."};
+        this.state = {
+            initialized: false,
+
+            ultraSonic: 1,
+            light: 1,
+            message: "",
+            info: "All information will be displayed here."
+        };
         this.handleSubmitUltraSonic = this.handleSubmitUltraSonic.bind(this);
         this.handleChangeUltraSonic = this.handleChangeUltraSonic.bind(this);
         this.handleSubmitLight = this.handleSubmitLight.bind(this);
@@ -53,9 +65,11 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
         this.handleSubmitJoystickDown = this.handleSubmitJoystickDown.bind(this);
         this.handleSubmitJoystickCenter = this.handleSubmitJoystickCenter.bind(this);
 
+        
+    }
+
+    componentDidMount() {
         // Canvas Preparation \\
-        let engine = createEngine({ registerDefaultZoomCanvasAction: false });
-        const model = new DiagramModel();
 
         const LINES = [10, 80, 150];
 
@@ -92,8 +106,14 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
         model.addNode(new SevenSegmentNodeModel(true, 600, LINES[0], model));
         model.addNode(new SevenSegmentNodeModel(false, 730, LINES[0], model));
 
-        engine.setModel(model);
-        this.engine = engine;
+        this.engine.setModel(model);
+        this.setState({
+            initialized: true,
+        });
+    }
+
+    componentDidUpdate(prevProps: MyProps, prevState: MyState) {
+
     }
 
     handleChangeUltraSonic(event: any) {
@@ -143,13 +163,16 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
     }
 
     render() {
-        return (
-            <div>
-                <div className={"canvas"}>
-                    <CanvasWidget
-                    engine={this.engine}
-                    className={"diagram"}/>
-                </div>
+        //console.log(this.engine.getModel());
+        if(this.engine.getModel() !== null) {
+            return (<CanvasWidget
+                engine={this.engine}
+                className={"diagram"}/>);
+        }
+        return null;
+        /*return (
+            <div className="diagram-container">
+                
                 <div className={"info"}>
                     <p>
                         {this.state.info}
@@ -198,7 +221,7 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
                     </form>
                 </div>
             </div>
-        );
+        );*/
     }
 
 }

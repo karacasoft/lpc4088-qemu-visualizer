@@ -4,8 +4,8 @@ import ChipPortModel from '../Ports/ChipPortModel';
 
 export default class ChipNodeModel extends PeripheralNodeModel {
 
-    pin_directions: boolean[] = [];
-    pin_voltages: number[] = [];  // True: In, False: Out
+    pin_directions: boolean[] = [];  // True: In, False: Out
+    pin_voltages: number[] = [];
     pin_voltages_initial: number[] = [];
 
     constructor(locked: boolean, x: number, y: number, model: DiagramModel, part: number) {

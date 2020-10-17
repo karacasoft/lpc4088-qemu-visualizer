@@ -12,6 +12,7 @@ function createWindow() {
         height: 768,
         webPreferences: {
             nodeIntegration: true,
+            nodeIntegrationInWorker: true,
         },
     });
     let startURL = process.env.ELECTRON_START_URL || url.format({

@@ -21,6 +21,7 @@ export default class LDRNodeModel extends PeripheralNodeModel {
         this.setPosition(x, y);
         if (locked === true) {
             this.setLocked();
+            
             this.registerListener(
                 {
                     selectionChanged: () => {
