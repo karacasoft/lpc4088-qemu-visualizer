@@ -63,7 +63,7 @@
     "postcss-normalize": "8.0.1",
     "postcss-preset-env": "6.7.0",
     "postcss-safe-parser": "4.0.1",
-    "qemu-lpc4088-controller": "git+ssh://git@github.com/karacasoft/lpc4088-qemu-communicator-js.git",
+    "qemu-lpc4088-controller": "https://github.com/karacasoft/lpc4088-qemu-communicator-js.git",
     "react": "^16.13.1",
     "react-app-polyfill": "^1.0.6",
     "react-dev-utils": "^10.2.1",

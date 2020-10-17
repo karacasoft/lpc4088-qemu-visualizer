@@ -261,7 +261,7 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
                     }
                 }
                 else if (next_node.PERIPHAREL_TYPE === 7) {
-                    left_resistance = left_resistance + LDRNodeModel.calculateResistance((next_node as LDRNodeModel).direction);
+                    left_resistance = left_resistance + LDRNodeModel.calculateResistance();
                     let next_link = next_node.getOtherConnections(line_voltage[line_voltage.length - 1][7]);
                     if (next_link.length === 1) {
                         next_node = PeripheralNodeModel.getPeripheral(next_link[0][5]);
@@ -297,7 +297,7 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
                     }
                 }
                 else if (next_node.PERIPHAREL_TYPE === 7) {
-                    right_resistance = right_resistance + LDRNodeModel.calculateResistance((next_node as LDRNodeModel).direction);
+                    right_resistance = right_resistance + LDRNodeModel.calculateResistance();
                     let next_link = next_node.getOtherConnections(line_ground[line_ground.length - 1][7]);
                     if (next_link.length === 1) {
                         next_node = PeripheralNodeModel.getPeripheral(next_link[0][5]);
