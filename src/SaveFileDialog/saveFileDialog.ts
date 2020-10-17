@@ -1,6 +1,11 @@
+import fs from 'fs';
+
 import { remote } from 'electron';
 
 export function showSaveDialog(file_contents: string, callback: () => void) {
+    //console.log(electron);
+    //console.log(remote);
+
     const dialog = remote.dialog;
     
     const WIN = remote.getCurrentWindow();
@@ -14,9 +19,13 @@ export function showSaveDialog(file_contents: string, callback: () => void) {
         ],
     };
 
-    dialog.showSaveDialog(WIN, options).then((filename) => {
-        // TODO write file
-        console.log("wow file: " + filename);
+    dialog.showSaveDialog(WIN, options).then((filedata) => {
+        if(!filedata.canceled && filedata.filePath) {
+            const extension = filedata.filePath.endsWith(".lpc-vcf") ?
+                "" : ".lpc-vcf";
+
+            fs.writeFileSync(filedata.filePath + extension, file_contents);
+        }
     });
 }
 

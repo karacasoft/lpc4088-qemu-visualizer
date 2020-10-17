@@ -35,12 +35,14 @@ interface MyState {
 }
 
 let model = new DiagramModel();
+let engine: DiagramEngine = createEngine({ registerDefaultZoomCanvasAction: false });
 
 export function getModel() { return model; }
+export function getEngine() { return engine; }
 
 export default class CircuitDisplay extends React.Component<MyProps, MyState> {
 
-    engine: DiagramEngine = createEngine({ registerDefaultZoomCanvasAction: false });
+    
 
     constructor(props: any) {
         // React preparation \\
@@ -106,7 +108,7 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
         model.addNode(new SevenSegmentNodeModel(true, 600, LINES[0], model));
         model.addNode(new SevenSegmentNodeModel(false, 730, LINES[0], model));
 
-        this.engine.setModel(model);
+        engine.setModel(model);
         this.setState({
             initialized: true,
         });
@@ -164,9 +166,9 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
 
     render() {
         //console.log(this.engine.getModel());
-        if(this.engine.getModel() !== null) {
+        if(engine.getModel() !== null) {
             return (<CanvasWidget
-                engine={this.engine}
+                engine={engine}
                 className={"diagram"}/>);
         }
         return null;

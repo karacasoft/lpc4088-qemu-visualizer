@@ -45,21 +45,6 @@ interface IOCONStateFuncChangeEventData {
     new_func: number;
 }
 
-function onMachineStateChanged(state: MachineStateEventData) {
-    if(state.module === "GPIO") {
-        if(state.event === "dir_change") {
-            state.new_dir
-        }
-    } else if(state.module === "IOCON") {
-        if(state.event === "func_change") {
-            const iocon_val = IOCON_LOOKUP_TABLE[state.port][state.pin][state.new_func];
-            if(iocon_val !== undefined) {
-                iocon_val.module
-            }
-        }
-    }
-}
-
 export type OnMachineStateChangeHandler = (event: MachineStateEventData) => void;
 
 class QemuConnector {

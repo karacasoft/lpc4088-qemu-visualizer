@@ -13,6 +13,7 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: true,
             nodeIntegrationInWorker: true,
+            enableRemoteModule: true,
         },
     });
     let startURL = process.env.ELECTRON_START_URL || url.format({
