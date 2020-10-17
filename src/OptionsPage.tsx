@@ -6,12 +6,13 @@ const useStyles = makeStyles(theme => ({
     root: {
       display: "flex",
       flexFlow: "column",
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: "stretch",
+      alignItems: "stretch",
       height: "100%",
     },
     tab: {
         display: "flex",
+        justifyContent: "center",
         alignItems: "center",
         flexGrow: 1,
     }

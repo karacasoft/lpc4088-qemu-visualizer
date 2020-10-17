@@ -21,6 +21,9 @@ import LDRNodeModel from './Nodes/LDRNodeModel';
 import VoltagePotNodeModel from './Nodes/VoltagePotNodeModel';
 import HandNodeModel from './Nodes/HandNodeModel';
 import SevenSegmentNodeModel from './Nodes/SevenSegmentNodeModel';
+import { ipcRenderer } from 'electron';
+
+import { MachineStateEventData } from '../common/QemuConnectorTypes';
 
 interface MyProps {
 }
@@ -72,7 +75,6 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
 
     componentDidMount() {
         // Canvas Preparation \\
-
         const LINES = [10, 80, 150];
 
         // Set peripherals
@@ -111,6 +113,30 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
         engine.setModel(model);
         this.setState({
             initialized: true,
+        });
+
+        ipcRenderer.on('on-machine-state-changed', (ev, state_change_ev) => {
+            const m_state_change_ev = state_change_ev as MachineStateEventData;
+
+            switch(m_state_change_ev.module) {
+                case "GPIO":
+                    if(m_state_change_ev.event === "dir_change") {
+                        
+                    } else if(m_state_change_ev.event === "mask_change") {
+
+                    } else if(m_state_change_ev.event === "pin_change") {
+
+                    }
+                    break;
+                case "IOCON":
+                    if(m_state_change_ev.event === "func_change") {
+
+                    }
+                    break;
+                default:
+                    
+                    break;
+            }
         });
     }
 

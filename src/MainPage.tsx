@@ -22,8 +22,6 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-let qemuInterface: QemuProcessInterface | null;
-
 function MainPage() {
   const [snackbarText, setSnackbarText] = useState<null | string>(null);
   const [exeFile, setExeFile] = useState<null | string>(null);

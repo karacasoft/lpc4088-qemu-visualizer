@@ -67,6 +67,12 @@ function createWindow() {
         if(!_qemuInterface && _filename) {
             try {
                 _qemuInterface = await QemuConnector.start_qemu(_filename);
+                QemuConnector.setOnMachineStateChangeHandler((ev) => {
+                    if(mainWindow !== null) {
+                        mainWindow.webContents.send("on-machine-state-changed", ev);
+                    }
+                });
+                _qemuInterface.run();
                 if(optionsWindow !== null) {
                     optionsWindow.webContents.send("exec-started");
                 }

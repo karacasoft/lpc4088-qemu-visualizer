@@ -8,8 +8,6 @@ import LPC4088VisualizerAppBar from './AppBar';
 import CircuitDisplay, { getEngine, getModel } from './Diagram';
 import LPC4088VisualizerDrawer from './Drawer';
 import MainPage from './MainPage';
-import { loadModelFromFile } from './ElectronUtil/loadModel';
-import { showSaveDialog } from './ElectronUtil/saveFileDialog';
 import OptionsPage from './OptionsPage';
 
 function App() {
