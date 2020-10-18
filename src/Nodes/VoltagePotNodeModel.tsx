@@ -1,5 +1,5 @@
 import { DiagramModel } from '@projectstorm/react-diagrams';
-import PeripheralNodeModel from './PeripheralNodeModel';
+import PeripheralNodeModel, { Peripheral_Type } from './PeripheralNodeModel';
 import VoltagePotPortModel from '../Ports/VoltagePotPortModel';
 
 export default class VoltagePotNodeModel extends PeripheralNodeModel {
@@ -24,7 +24,7 @@ export default class VoltagePotNodeModel extends PeripheralNodeModel {
                 }
             );
         }
-        this.PERIPHAREL_TYPE = 8;
+        this.PERIPHAREL_TYPE = Peripheral_Type.VoltagePot;
     }
 
     addInPort(label: string): VoltagePotPortModel {

@@ -1,5 +1,5 @@
 import { DiagramModel } from '@projectstorm/react-diagrams';
-import PeripheralNodeModel from './PeripheralNodeModel';
+import PeripheralNodeModel, { Peripheral_Type } from './PeripheralNodeModel';
 import LEDPortModel from '../Ports/LEDPortModel';
 
 export default class LEDNodeModel extends PeripheralNodeModel {
@@ -46,7 +46,7 @@ export default class LEDNodeModel extends PeripheralNodeModel {
                 }
             );
         }
-        this.PERIPHAREL_TYPE = 4;
+        this.PERIPHAREL_TYPE = Peripheral_Type.LED;
         this.colour = colour;
         this.direction = direction;
     }

@@ -1,6 +1,7 @@
 import { DefaultNodeModel, LinkModel } from '@projectstorm/react-diagrams';
-/*
-enum Peripheral_Type {
+
+export enum Peripheral_Type {
+    None,
     Chip,
     Ground,
     Voltage,
@@ -12,12 +13,23 @@ enum Peripheral_Type {
     VoltagePot,
     Hand
 }
-*/
+
 export default class PeripheralNodeModel extends DefaultNodeModel {
 
-    PERIPHAREL_TYPE: number = -1;
+    PERIPHAREL_TYPE: Peripheral_Type = Peripheral_Type.None;
     static all_peripherals: PeripheralNodeModel[] = [];
     static chips: PeripheralNodeModel[] = [];
+
+    remove() {
+        super.remove();
+        const nodeModel = this;
+        PeripheralNodeModel.all_peripherals = PeripheralNodeModel.all_peripherals.filter((element) => {
+            return element !== nodeModel;
+        });
+        PeripheralNodeModel.chips = PeripheralNodeModel.chips.filter((element) => {
+            return element !== nodeModel;
+        });
+	}
 
     updateColour (colour: string) {
         this.options.color = colour;
