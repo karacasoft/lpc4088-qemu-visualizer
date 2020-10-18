@@ -17,41 +17,27 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-function ExecutableFileSelector() {
+interface Props {
+    qemuRunning: boolean;
+    qemuStateUnknown: boolean;
+    file?: string;
+
+    onFileSelect: (filePath: string) => void;
+    onClickExecute: () => void;
+}
+
+function ExecutableFileSelector({ qemuRunning, qemuStateUnknown, file, onFileSelect, onClickExecute } : Props) {
     const classes = useStyles();
-    const [isRunning, setRunning] = useState(false);
-    const [isUnknown, setUnknown] = useState(false);
-
-    const [ipcInitialized, setIpcInitialized] = useState(false);
-
-    const [file, setFile] = useState<string|null>(null);
-
+    
     const onDrop = useCallback(acceptedFiles => {
         if(acceptedFiles.length > 1) {
             // TODO error
         } else {
-            setFile(acceptedFiles[0].path);
-            ipcRenderer.send('exec-file-select', acceptedFiles[0].path);
+            onFileSelect(acceptedFiles[0].path);
         }
     }, []); 
 
-    if(!ipcInitialized) {
-        ipcRenderer.on('exec-started', () => {
-            setRunning(true);
-            setUnknown(false);
-        });
-
-        ipcRenderer.on('exec-stopped', () => {
-            setRunning(false);
-            setUnknown(false);
-        });
-
-        ipcRenderer.on('exec-start-failed', () => {
-            setRunning(false);
-            setUnknown(false);
-        });
-        setIpcInitialized(true);
-    }
+    
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
@@ -76,18 +62,11 @@ function ExecutableFileSelector() {
                 </div>
             </Grid>
             <Grid item xs={12}>
-                <Button onClick={(ev) => {
-                    if(!isRunning) {
-                        ipcRenderer.send('start-exec');
-                    } else {
-                        ipcRenderer.send('stop-exec');
-                    }
-                    setUnknown(true);
-                    ev.stopPropagation();
-                }}
+                <Button onClick={onClickExecute}
                 variant="contained"
-                disabled={isUnknown}
-                >{isRunning ? "Stop" : "Execute"}</Button>
+                color="primary"
+                disabled={qemuStateUnknown}
+                >{qemuRunning ? "Stop" : "Execute"}</Button>
             </Grid>
         </Grid>);
 }

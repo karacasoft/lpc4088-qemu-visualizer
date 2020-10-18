@@ -118,19 +118,12 @@ function createWindow() {
                     return [4 /*yield*/, QemuConnector_1.default.start_qemu(_filename)];
                 case 2:
                     _qemuInterface = _a.sent();
-                    console.log("qemu_started");
                     QemuConnector_1.default.setOnMachineStateChangeHandler(function (ev) {
                         if (mainWindow !== null) {
                             mainWindow.webContents.send("on-machine-state-changed", ev);
                         }
                     });
-                    QemuConnector_1.default.setEventHandler(function (ev) {
-                        if (mainWindow !== null) {
-                            mainWindow.webContents.send("on-machine-state-changed", ev);
-                        }
-                    });
                     _qemuInterface.run();
-                    console.log("qemu running");
                     if (optionsWindow !== null) {
                         optionsWindow.webContents.send("exec-started");
                     }

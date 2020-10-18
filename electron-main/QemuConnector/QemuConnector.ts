@@ -1,6 +1,6 @@
 import qemu_lpc_ctrl, { QemuEventData } from 'qemu-lpc4088-controller';
 import MachineState from './MachineState';
-import { MachineStateEventData } from './QemuConnectorTypes';
+import { MachineStateEventData } from '../../common/QemuConnectorTypes';
 
 export type QemuEventHandler = (qemuEvent: QemuEventData) => void;
 
