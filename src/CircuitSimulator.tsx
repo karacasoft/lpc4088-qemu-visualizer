@@ -84,7 +84,11 @@ export default class CircuitSimulator {
             return;
         }
 
-        if (this.circuitLED(start_link, node) === true) {
+        if (this.circuitLEDGround(start_link, node) === true) {
+            return;
+        }
+
+        if (this.circuitLEDVoltage(start_link, node) === true) {
             return;
         }
 
@@ -102,7 +106,7 @@ export default class CircuitSimulator {
 
     }
 
-    static circuitLED(start_link: string[], node: PeripheralNodeModel): boolean {
+    static circuitLEDGround(start_link: string[], node: PeripheralNodeModel): boolean {
 
         if (node.PERIPHAREL_TYPE === Peripheral_Type.Resistance || node.PERIPHAREL_TYPE === Peripheral_Type.LED || node.PERIPHAREL_TYPE === Peripheral_Type.LDR) {
 
@@ -123,7 +127,7 @@ export default class CircuitSimulator {
             line.push(linee[1]);
             line.push(linee[0]);
             let total_resistance = 0.001;
-            let voltage = chip.getPinVoltageValue(start_link[2])
+            let voltage = chip.getPinVoltageValue(start_link[2]);
 
             if (node.PERIPHAREL_TYPE === Peripheral_Type.Resistance) {
                 total_resistance = total_resistance + (node as ResistanceNodeModel).resistance;
@@ -134,7 +138,6 @@ export default class CircuitSimulator {
 
             let next_node = PeripheralNodeModel.getPeripheral(line[1][5]);
             while (next_node !== null) {
-
                 if (next_node.PERIPHAREL_TYPE === Peripheral_Type.Ground) {
                     break;
                 }
@@ -166,6 +169,104 @@ export default class CircuitSimulator {
                 }
                 else if (next_node.PERIPHAREL_TYPE === Peripheral_Type.LED) {
                     if ((next_node as LEDNodeModel).direction === true) {
+                        return false;
+                    }
+
+                    let next_link = next_node.getOtherConnections(line[line.length - 1][7]);
+
+                    if (next_link.length === 1) {
+                        next_node = PeripheralNodeModel.getPeripheral(next_link[0][5]);
+                        line.push(next_link[0]);
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                else {
+                    return false;
+                }
+            }
+
+            // Process LED line
+            let current = voltage / total_resistance;
+            for (let i = 0; i < line.length; i ++) {
+                let current_node = PeripheralNodeModel.getPeripheral(line[i][5]);
+                if (current_node !== null && current_node.PERIPHAREL_TYPE === Peripheral_Type.LED) {
+                    (current_node as LEDNodeModel).paint(current);        
+                }
+            }
+
+            return true;
+
+        }
+
+        return false;
+    }
+
+    static circuitLEDVoltage(start_link: string[], node: PeripheralNodeModel): boolean {
+
+        if (node.PERIPHAREL_TYPE === Peripheral_Type.Resistance || node.PERIPHAREL_TYPE === Peripheral_Type.LED || node.PERIPHAREL_TYPE === Peripheral_Type.LDR) {
+
+            let chip = PeripheralNodeModel.getChip(start_link[1]) as ChipNodeModel;
+            if (chip.getPinDirection(start_link[2]) === true || chip.getPinVoltageValue(start_link[2]) !== 0) {
+                return false;
+            }
+
+            // Extract LED line
+            let linee = node.getOtherConnections(start_link[7]);
+
+            if (linee.length === 0) {
+                return false;
+            }
+
+            linee.push(start_link);
+            let line = [];
+            line.push(linee[1]);
+            line.push(linee[0]);
+            let total_resistance = 0.001;
+            let voltage = 0;
+
+            if (node.PERIPHAREL_TYPE === Peripheral_Type.Resistance) {
+                total_resistance = total_resistance + (node as ResistanceNodeModel).resistance;
+            }
+            else if (node.PERIPHAREL_TYPE === Peripheral_Type.LDR) {
+                total_resistance = total_resistance + LDRNodeModel.calculateResistance();
+            }
+
+            let next_node = PeripheralNodeModel.getPeripheral(line[1][5]);
+            while (next_node !== null) {
+                if (next_node.PERIPHAREL_TYPE === Peripheral_Type.Voltage) {
+                    voltage = (node as VoltageNodeModel).voltage;
+                    break;
+                }
+                if (next_node.PERIPHAREL_TYPE === Peripheral_Type.Resistance) {
+                    total_resistance = total_resistance + (next_node as ResistanceNodeModel).resistance;
+
+                    let next_link = next_node.getOtherConnections(line[line.length - 1][7]);
+
+                    if (next_link.length === 1) {
+                        next_node = PeripheralNodeModel.getPeripheral(next_link[0][5]);
+                        line.push(next_link[0]);
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                else if (next_node.PERIPHAREL_TYPE === Peripheral_Type.LDR) {
+                    total_resistance = total_resistance + LDRNodeModel.calculateResistance();
+
+                    let next_link = next_node.getOtherConnections(line[line.length - 1][7]);
+
+                    if (next_link.length === 1) {
+                        next_node = PeripheralNodeModel.getPeripheral(next_link[0][5]);
+                        line.push(next_link[0]);
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                else if (next_node.PERIPHAREL_TYPE === Peripheral_Type.LED) {
+                    if ((next_node as LEDNodeModel).direction === false) {
                         return false;
                     }
 
