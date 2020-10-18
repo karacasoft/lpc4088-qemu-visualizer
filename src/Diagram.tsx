@@ -14,7 +14,7 @@ import GroundNodeModel from './Nodes/GroundNodeModel';
 import VoltageNodeModel from './Nodes/VoltageNodeModel';
 import LEDNodeModel from './Nodes/LEDNodeModel';
 import ResistanceNodeModel from './Nodes/ResistanceNodeModel';
-import SimulateNodeModel from './Nodes/SimulateNodeModel';
+import SimulateNodeModel from './Nodes/CircuitSimulator';
 import UltraSonicNodeModel from './Nodes/UltraSonicNodeModel';
 import SwitchNodeModel from './Nodes/SwitchNodeModel';
 import LDRNodeModel from './Nodes/LDRNodeModel';
@@ -42,8 +42,6 @@ export function getEngine() { return engine; }
 
 export default class CircuitDisplay extends React.Component<MyProps, MyState> {
 
-    
-
     constructor(props: any) {
         // React preparation \\
         super(props);
@@ -66,8 +64,6 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
         this.handleSubmitJoystickRight = this.handleSubmitJoystickRight.bind(this);
         this.handleSubmitJoystickDown = this.handleSubmitJoystickDown.bind(this);
         this.handleSubmitJoystickCenter = this.handleSubmitJoystickCenter.bind(this);
-
-        
     }
 
     componentDidMount() {

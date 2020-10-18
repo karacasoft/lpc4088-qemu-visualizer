@@ -1,5 +1,5 @@
 import { DiagramModel } from '@projectstorm/react-diagrams';
-import PeripheralNodeModel from './PeripheralNodeModel';
+import PeripheralNodeModel, { Peripheral_Type } from './PeripheralNodeModel';
 import UltraSonicPortModel from '../Ports/UltraSonicPortModel';
 
 export default class UltraSonicNodeModel extends PeripheralNodeModel {
@@ -27,7 +27,7 @@ export default class UltraSonicNodeModel extends PeripheralNodeModel {
                 }
             );
         }
-        this.PERIPHAREL_TYPE = 5;
+        this.PERIPHAREL_TYPE = Peripheral_Type.UltraSonic;
     }
 
     addInPort(label: string): UltraSonicPortModel {

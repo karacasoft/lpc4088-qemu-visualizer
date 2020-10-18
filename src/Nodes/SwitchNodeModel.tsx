@@ -1,5 +1,5 @@
 import { DiagramModel } from '@projectstorm/react-diagrams';
-import PeripheralNodeModel from './PeripheralNodeModel';
+import PeripheralNodeModel, { Peripheral_Type } from './PeripheralNodeModel';
 import SwitchPortModel from '../Ports/SwitchPortModel';
 
 export default class SwitchNodeModel extends PeripheralNodeModel {
@@ -25,7 +25,7 @@ export default class SwitchNodeModel extends PeripheralNodeModel {
                 }
             );
         }
-        this.PERIPHAREL_TYPE = 6;
+        this.PERIPHAREL_TYPE = Peripheral_Type.Switch;
     }
 
     addInPort(label: string): SwitchPortModel {

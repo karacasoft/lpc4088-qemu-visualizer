@@ -1,5 +1,5 @@
 import { DiagramModel } from '@projectstorm/react-diagrams';
-import PeripheralNodeModel from './PeripheralNodeModel';
+import PeripheralNodeModel, { Peripheral_Type } from './PeripheralNodeModel';
 import HandPortModel from '../Ports/HandPortModel';
 
 export default class HandNodeModel extends PeripheralNodeModel {
@@ -29,7 +29,7 @@ export default class HandNodeModel extends PeripheralNodeModel {
                 }
             );
         }
-        this.PERIPHAREL_TYPE = 9;
+        this.PERIPHAREL_TYPE = Peripheral_Type.Hand;
         this.value = value;
     }
 

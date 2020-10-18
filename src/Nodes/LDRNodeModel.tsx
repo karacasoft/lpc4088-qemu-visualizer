@@ -1,5 +1,5 @@
 import { DiagramModel } from '@projectstorm/react-diagrams';
-import PeripheralNodeModel from './PeripheralNodeModel';
+import PeripheralNodeModel, { Peripheral_Type } from './PeripheralNodeModel';
 import LDRPortModel from '../Ports/LDRPortModel';
 
 export default class LDRNodeModel extends PeripheralNodeModel {
@@ -27,7 +27,7 @@ export default class LDRNodeModel extends PeripheralNodeModel {
                 }
             );
         }
-        this.PERIPHAREL_TYPE = 7;
+        this.PERIPHAREL_TYPE = Peripheral_Type.LDR;
     }
 
     addInPort(label: string): LDRPortModel {

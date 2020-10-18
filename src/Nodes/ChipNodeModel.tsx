@@ -1,5 +1,5 @@
 import { DiagramModel } from '@projectstorm/react-diagrams';
-import PeripheralNodeModel from './PeripheralNodeModel';
+import PeripheralNodeModel, { Peripheral_Type } from './PeripheralNodeModel';
 import ChipPortModel from '../Ports/ChipPortModel';
 
 export default class ChipNodeModel extends PeripheralNodeModel {
@@ -41,7 +41,7 @@ export default class ChipNodeModel extends PeripheralNodeModel {
                 }
             );
         }
-        this.PERIPHAREL_TYPE = 0;
+        this.PERIPHAREL_TYPE = Peripheral_Type.Chip;
     }
 
     addInPort(label: string): ChipPortModel {

@@ -1,66 +1,46 @@
 import { DiagramModel } from '@projectstorm/react-diagrams';
+import { getModel } from '../Diagram';
 import ChipNodeModel from './ChipNodeModel';
 import HandNodeModel from './HandNodeModel';
 import LDRNodeModel from './LDRNodeModel';
 import LEDNodeModel from './LEDNodeModel';
-import PeripheralNodeModel from './PeripheralNodeModel';
+import PeripheralNodeModel, { Peripheral_Type } from './PeripheralNodeModel';
 import ResistanceNodeModel from './ResistanceNodeModel';   
 import UltraSonicNodeModel from './UltraSonicNodeModel';
 import VoltageNodeModel from './VoltageNodeModel';
 
-export default class SimulateNodeModel extends PeripheralNodeModel {
+export default class CircuitSimulator {
 
-    constructor(x: number, y: number, model: DiagramModel) {
-        super({ name: "Simulate", color: "rgb(96, 96, 96)" });
-        this.setPosition(x, y);
-        this.setLocked();
-        this.registerListener(
-            {
-                selectionChanged: () => {
-                    if (this.isSelected()) {
-                        // TODO Start simulation
-                        console.log("+");
-                        
-                        this.removeUnconnectedLinks(model);
-                        this.clearLEDS(model);
-                        
-                        // Gather all chip ports
-                        let chip_pins = []
-                        for (let chip of PeripheralNodeModel.chips) {
-                            let ports = chip.getInPorts();
-                            for (let port of ports) {
-                                chip_pins.push(port);
-                            }
-                        }
+    static startSimulation() {
+        this.removeUnconnectedLinks(getModel());
+        this.clearLEDS(getModel());
+        
+        // Gather all chip ports
+        let chip_pins = []
+        for (let chip of PeripheralNodeModel.chips) {
+            let ports = chip.getInPorts();
+            for (let port of ports) {
+                chip_pins.push(port);
+            }
+        }
 
-                        // Process each chip pins
-                        for (let i = 0; i < chip_pins.length; i ++) {
-                            let links = chip_pins[i].getLinks();
-                            for (let link of Object.values(links)) {
-                                if (link.getSourcePort() !== null && link.getTargetPort() !== null) {
-                                    if ((link.getSourcePort().getNode() as PeripheralNodeModel).getName().substring(0, 3) === "LPC") {
-                                        this.selectCircuitType(PeripheralNodeModel.linkSourceTarget(link));
-                                    }
-                                    else {
-                                        this.selectCircuitType(PeripheralNodeModel.linkTargetSource(link));
-                                    }
-                                }
-                            }
-                        }
-
-                        // Call simulation
-                        //this.Simulate(circuits);*/
+        // Process each chip pins
+        for (let i = 0; i < chip_pins.length; i ++) {
+            let links = chip_pins[i].getLinks();
+            for (let link of Object.values(links)) {
+                if (link.getSourcePort() !== null && link.getTargetPort() !== null) {
+                    if ((link.getSourcePort().getNode() as PeripheralNodeModel).getName().substring(0, 3) === "LPC") {
+                        this.checkCircuitTypeAndSimulate(PeripheralNodeModel.linkSourceTarget(link));
                     }
                     else {
-                        // TODO Stop simulation
-                        console.log("-");
+                        this.checkCircuitTypeAndSimulate(PeripheralNodeModel.linkTargetSource(link));
                     }
                 }
             }
-        );
+        }
     }
 
-    removeUnconnectedLinks(model: DiagramModel) {
+    static removeUnconnectedLinks(model: DiagramModel) {
 
         let links = model.getLinks();
         for (let link of links) {
@@ -73,15 +53,17 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
 
     }
 
-    clearLEDS(model: DiagramModel) {
+    static clearLEDS(model: DiagramModel) {
+
         for (let node of PeripheralNodeModel.all_peripherals) {
-            if (node.PERIPHAREL_TYPE === 4) {
+            if (node.PERIPHAREL_TYPE === Peripheral_Type.LED) {
                 (node as LEDNodeModel).depaint();
             }
         }
+
     }
 
-    selectCircuitType(start_link: string[]) {
+    static checkCircuitTypeAndSimulate(start_link: string[]) {
 
         let node = PeripheralNodeModel.getPeripheral(start_link[5]);
         if (node === null) {
@@ -106,9 +88,9 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
 
     }
 
-    circuitLED(start_link: string[], node: PeripheralNodeModel): boolean {
+    static circuitLED(start_link: string[], node: PeripheralNodeModel): boolean {
 
-        if (node.PERIPHAREL_TYPE === 3 || node.PERIPHAREL_TYPE === 4) {
+        if (node.PERIPHAREL_TYPE === Peripheral_Type.Resistance || node.PERIPHAREL_TYPE === Peripheral_Type.LED || node.PERIPHAREL_TYPE === Peripheral_Type.LDR) {
 
             let chip = PeripheralNodeModel.getChip(start_link[1]) as ChipNodeModel;
             if (chip.getPinDirection(start_link[2]) === true) {
@@ -129,17 +111,20 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
             let total_resistance = 0.001;
             let voltage = chip.getPinVoltageValue(start_link[2])
 
-            if (node.PERIPHAREL_TYPE === 3) {
+            if (node.PERIPHAREL_TYPE === Peripheral_Type.Resistance) {
                 total_resistance = total_resistance + (node as ResistanceNodeModel).resistance;
+            }
+            else if (node.PERIPHAREL_TYPE === Peripheral_Type.LDR) {
+                total_resistance = total_resistance + LDRNodeModel.calculateResistance();
             }
 
             let next_node = PeripheralNodeModel.getPeripheral(line[1][5]);
             while (next_node !== null) {
 
-                if (next_node.PERIPHAREL_TYPE === 1) {
+                if (next_node.PERIPHAREL_TYPE === Peripheral_Type.Ground) {
                     break;
                 }
-                if (next_node.PERIPHAREL_TYPE === 3) {
+                if (next_node.PERIPHAREL_TYPE === Peripheral_Type.Resistance) {
                     total_resistance = total_resistance + (next_node as ResistanceNodeModel).resistance;
 
                     let next_link = next_node.getOtherConnections(line[line.length - 1][7]);
@@ -152,7 +137,20 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
                         return false;
                     }
                 }
-                else if (next_node.PERIPHAREL_TYPE === 4) {
+                else if (next_node.PERIPHAREL_TYPE === Peripheral_Type.LDR) {
+                    total_resistance = total_resistance + LDRNodeModel.calculateResistance();
+
+                    let next_link = next_node.getOtherConnections(line[line.length - 1][7]);
+
+                    if (next_link.length === 1) {
+                        next_node = PeripheralNodeModel.getPeripheral(next_link[0][5]);
+                        line.push(next_link[0]);
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                else if (next_node.PERIPHAREL_TYPE === Peripheral_Type.LED) {
                     if ((next_node as LEDNodeModel).direction === true) {
                         return false;
                     }
@@ -176,7 +174,7 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
             let current = voltage / total_resistance;
             for (let i = 0; i < line.length; i ++) {
                 let current_node = PeripheralNodeModel.getPeripheral(line[i][5]);
-                if (current_node !== null && current_node.PERIPHAREL_TYPE === 4) {
+                if (current_node !== null && current_node.PERIPHAREL_TYPE === Peripheral_Type.LED) {
                     (current_node as LEDNodeModel).paint(current);        
                 }
             }
@@ -188,28 +186,36 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
         return false;
     }
 
-    circuitUltraSonic(start_link: string[], node: PeripheralNodeModel): boolean {
+    static circuitUltraSonic(start_link: string[], node: PeripheralNodeModel): boolean {
         
-        if (node.PERIPHAREL_TYPE === 5 && start_link[6] === "Trig") {
-            // let chip = PeripheralNodeModel.getChip(start_link[1]) as ChipNodeModel;
+        if (node.PERIPHAREL_TYPE === Peripheral_Type.UltraSonic && start_link[6] === "Trig") {
+            let chip = PeripheralNodeModel.getChip(start_link[1]) as ChipNodeModel;
             let links = node.getOtherConnections(start_link[6]);
 
             if (links.length !== 3) {
                 return false;
             }
 
+            if (chip.getPinDirection(start_link[2]) === true) {
+                return false;
+            }
+
             let node_voltage = PeripheralNodeModel.getPeripheral(links[0][5]);
-            if (node_voltage === null || node_voltage.PERIPHAREL_TYPE !== 2) {
+            if (node_voltage === null || node_voltage.PERIPHAREL_TYPE !== Peripheral_Type.Voltage) {
                 return false;
             }
 
             let node_chip = PeripheralNodeModel.getChip(links[1][5]);
-            if (node_chip === null || node_chip.PERIPHAREL_TYPE !== 0) {
+            if (node_chip === null || node_chip.PERIPHAREL_TYPE !== Peripheral_Type.Chip) {
+                return false;
+            }
+
+            if (chip.getPinDirection(links[1][6]) === false) {
                 return false;
             }
 
             let node_ground = PeripheralNodeModel.getPeripheral(links[2][5]);
-            if (node_ground === null || node_ground.PERIPHAREL_TYPE !== 1) {
+            if (node_ground === null || node_ground.PERIPHAREL_TYPE !== Peripheral_Type.Ground) {
                 return false;
             }
 
@@ -221,9 +227,9 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
         return false;
     }
 
-    circuitLDR(start_link: string[], node: PeripheralNodeModel): boolean {
+    static circuitLDR(start_link: string[], node: PeripheralNodeModel): boolean {
 
-        if (node.PERIPHAREL_TYPE === 8 && start_link[6] === "Chip") {
+        if (node.PERIPHAREL_TYPE === Peripheral_Type.VoltagePot && start_link[6] === "Chip") {
 
             let chip = PeripheralNodeModel.getChip(start_link[1]) as ChipNodeModel;
             if (chip.getPinDirection(start_link[2]) === false) {
@@ -245,11 +251,11 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
             let next_node = PeripheralNodeModel.getPeripheral(line_voltage[0][5]);
 
             while(next_node !== null) {
-                if (next_node.PERIPHAREL_TYPE === 2) {
+                if (next_node.PERIPHAREL_TYPE === Peripheral_Type.Voltage) {
                     voltage = (next_node as VoltageNodeModel).voltage;
                     break;
                 }
-                if (next_node.PERIPHAREL_TYPE === 3) {
+                if (next_node.PERIPHAREL_TYPE === Peripheral_Type.Resistance) {
                     left_resistance = left_resistance + (next_node as ResistanceNodeModel).resistance;
                     let next_link = next_node.getOtherConnections(line_voltage[line_voltage.length - 1][7]);
                     if (next_link.length === 1) {
@@ -260,7 +266,7 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
                         return false;
                     }
                 }
-                else if (next_node.PERIPHAREL_TYPE === 7) {
+                else if (next_node.PERIPHAREL_TYPE === Peripheral_Type.LDR) {
                     left_resistance = left_resistance + LDRNodeModel.calculateResistance();
                     let next_link = next_node.getOtherConnections(line_voltage[line_voltage.length - 1][7]);
                     if (next_link.length === 1) {
@@ -282,10 +288,10 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
             next_node = PeripheralNodeModel.getPeripheral(line_ground[0][5]);
 
             while(next_node !== null) {
-                if (next_node.PERIPHAREL_TYPE === 1) {
+                if (next_node.PERIPHAREL_TYPE === Peripheral_Type.Ground) {
                     break;
                 }
-                if (next_node.PERIPHAREL_TYPE === 3) {
+                if (next_node.PERIPHAREL_TYPE === Peripheral_Type.Resistance) {
                     right_resistance = right_resistance + (next_node as ResistanceNodeModel).resistance;
                     let next_link = next_node.getOtherConnections(line_ground[line_ground.length - 1][7]);
                     if (next_link.length === 1) {
@@ -296,7 +302,7 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
                         return false;
                     }
                 }
-                else if (next_node.PERIPHAREL_TYPE === 7) {
+                else if (next_node.PERIPHAREL_TYPE === Peripheral_Type.LDR) {
                     right_resistance = right_resistance + LDRNodeModel.calculateResistance();
                     let next_link = next_node.getOtherConnections(line_ground[line_ground.length - 1][7]);
                     if (next_link.length === 1) {
@@ -325,9 +331,9 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
 
     }
 
-    circuitSwitch(start_link: string[], node: PeripheralNodeModel): boolean {
+    static circuitSwitch(start_link: string[], node: PeripheralNodeModel): boolean {
 
-        if (node.PERIPHAREL_TYPE === 6 && start_link[6] === "Chip") {
+        if (node.PERIPHAREL_TYPE === Peripheral_Type.Switch && start_link[6] === "Chip") {
 
             let chip = PeripheralNodeModel.getChip(start_link[1]) as ChipNodeModel;
             if (chip.getPinDirection(start_link[2]) === false) {
@@ -342,12 +348,12 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
             }
             
             let node_voltage = PeripheralNodeModel.getPeripheral(links[0][5]);
-            if (node_voltage === null || node_voltage.PERIPHAREL_TYPE !== 2) {
+            if (node_voltage === null || node_voltage.PERIPHAREL_TYPE !== Peripheral_Type.Voltage) {
                 return false;
             }
             
             let node_hand = PeripheralNodeModel.getPeripheral(links[1][5]);
-            if (node_hand === null || node_hand.PERIPHAREL_TYPE !== 9) {
+            if (node_hand === null || node_hand.PERIPHAREL_TYPE !== Peripheral_Type.Hand) {
                 return false;
             }
             else {
@@ -355,7 +361,7 @@ export default class SimulateNodeModel extends PeripheralNodeModel {
             }
             
             let node_ground = PeripheralNodeModel.getPeripheral(links[2][5]);
-            if (node_ground === null || node_ground.PERIPHAREL_TYPE !== 1) {
+            if (node_ground === null || node_ground.PERIPHAREL_TYPE !== Peripheral_Type.Ground) {
                 return false;
             }
             

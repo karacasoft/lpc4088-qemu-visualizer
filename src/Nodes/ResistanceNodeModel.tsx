@@ -1,5 +1,5 @@
 import { DiagramModel } from '@projectstorm/react-diagrams';
-import PeripheralNodeModel from './PeripheralNodeModel';
+import PeripheralNodeModel, { Peripheral_Type } from './PeripheralNodeModel';
 import ResistancePortModel from '../Ports/ResistancePortModel';
 
 export default class ResistanceNodeModel extends PeripheralNodeModel {
@@ -25,7 +25,7 @@ export default class ResistanceNodeModel extends PeripheralNodeModel {
                 }
             );
         }
-        this.PERIPHAREL_TYPE = 3;
+        this.PERIPHAREL_TYPE = Peripheral_Type.Resistance;
         this.resistance = resistance;
     }
 
