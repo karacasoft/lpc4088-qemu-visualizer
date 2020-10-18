@@ -1,22 +1,36 @@
 import { DiagramModel } from '@projectstorm/react-diagrams';
-import { getModel } from '../Diagram';
-import ChipNodeModel from './ChipNodeModel';
-import HandNodeModel from './HandNodeModel';
-import LDRNodeModel from './LDRNodeModel';
-import LEDNodeModel from './LEDNodeModel';
-import PeripheralNodeModel, { Peripheral_Type } from './PeripheralNodeModel';
-import ResistanceNodeModel from './ResistanceNodeModel';   
-import UltraSonicNodeModel from './UltraSonicNodeModel';
-import VoltageNodeModel from './VoltageNodeModel';
+import { getModel } from './Diagram';
+import ChipNodeModel from './Nodes/ChipNodeModel';
+import HandNodeModel from './Nodes/HandNodeModel';
+import LDRNodeModel from './Nodes/LDRNodeModel';
+import LEDNodeModel from './Nodes/LEDNodeModel';
+import PeripheralNodeModel, { Peripheral_Type } from './Nodes/PeripheralNodeModel';
+import ResistanceNodeModel from './Nodes/ResistanceNodeModel';   
+import UltraSonicNodeModel from './Nodes/UltraSonicNodeModel';
+import VoltageNodeModel from './Nodes/VoltageNodeModel';
 
 export default class CircuitSimulator {
+
+    static initializeSimulation() {
+        PeripheralNodeModel.chips.forEach((p) => {
+            const chip = p as ChipNodeModel;
+            chip.pin_directions = [];
+            for(let i = 0; i < 32; i++) {
+                chip.pin_directions.push(true);
+            }
+            chip.pin_voltages_initial = [];
+            for(let i = 0; i < 32; i++) {
+                chip.pin_voltages_initial.push(0);
+            }
+        });
+    }
 
     static startSimulation() {
         this.removeUnconnectedLinks(getModel());
         this.clearLEDS(getModel());
         
         // Gather all chip ports
-        let chip_pins = []
+        let chip_pins = [];
         for (let chip of PeripheralNodeModel.chips) {
             let ports = chip.getInPorts();
             for (let port of ports) {

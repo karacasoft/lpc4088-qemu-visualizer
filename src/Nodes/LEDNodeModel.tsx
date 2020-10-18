@@ -8,21 +8,8 @@ export default class LEDNodeModel extends PeripheralNodeModel {
     direction: boolean;
     static MAX_CURRENT = 0.005;
 
-    constructor(direction: boolean, locked: boolean, x: number, y: number, model: DiagramModel, colour: string) {
-        if (locked === true) {
-            if (colour === "R") {
-                super({ name: "LED", color: "rgb(192, 0, 0)" });
-            }
-            else if (colour === "G") {
-                super({ name: "LED", color: "rgb(0, 192, 0)" });
-            }
-            else  {
-                super({ name: "LED", color: "rgb(0, 0, 192)" });
-            }
-        }
-        else  {
-            super({ name: "LED", color: "rgb(192, 192, 192)" });
-        }
+    constructor(direction: boolean, locked: boolean, x: number, y: number, colour: string) {
+        super({ name: "LED", color: "rgb(192, 192, 192)", type: "led" });
         if (direction === true) {
             this.addInPort("+");
             this.addOutPort("-");
@@ -32,20 +19,7 @@ export default class LEDNodeModel extends PeripheralNodeModel {
             this.addOutPort("+");
         }
         this.setPosition(x, y);
-        if (locked === true) {
-            this.setLocked();
-            this.registerListener(
-                {
-                    selectionChanged: () => {
-                        if (this.isSelected()) {
-                            let node = new LEDNodeModel(direction, false, x, y + 400, model, colour);
-                            model.addNode(node);
-                            PeripheralNodeModel.all_peripherals.push(node);
-                        }
-                    }
-                }
-            );
-        }
+        this.setLocked(locked);
         this.PERIPHAREL_TYPE = Peripheral_Type.LED;
         this.colour = colour;
         this.direction = direction;
@@ -76,19 +50,19 @@ export default class LEDNodeModel extends PeripheralNodeModel {
     }
 
     paint(current: number) {
-        let value = (current / 0.0075) * 255;
+        let value = (current / 0.0025) * 255;
         if (value > 255) {
             value = 255;
         }
 
         if (this.colour === "R") {
-            this.options.color = "rgb(" + value + ", 0, 0)";
+            this.options.color = "rgb(" + value + ", 50, 50)";
         }
         else if (this.colour === "G") {
-            this.options.color = "rgb(0, " + value + ", 0)";
+            this.options.color = "rgb(50, " + value + ", 50)";
         }
         else {
-            this.options.color = "rgb(0, 0, " + value + ")";
+            this.options.color = "rgb(50, 50, " + value + ")";
         }
     }
 

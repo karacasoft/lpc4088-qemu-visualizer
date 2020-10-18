@@ -1,6 +1,7 @@
 import { AppBar, makeStyles, Tab, Tabs } from '@material-ui/core';
 import { ipcRenderer } from 'electron';
 import React, { useState } from 'react';
+import CircuitSimulator from './CircuitSimulator';
 import ExecutableFileSelector from './OptionsPages/ExecutableFileSelector';
 import Joystick from './OptionsPages/Joystick';
 import LDR from './OptionsPages/LDR';
@@ -93,6 +94,7 @@ function OptionsPage() {
                         }}
                         onClickExecute={() => {
                             if(!isRunning) {
+                                CircuitSimulator.initializeSimulation();
                                 ipcRenderer.send('start-exec');
                             } else {
                                 ipcRenderer.send('stop-exec');

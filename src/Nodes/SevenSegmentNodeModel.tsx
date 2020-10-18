@@ -37,7 +37,7 @@ export default class SevenSegmentNodeModel extends PeripheralNodeModel {
                                 let link = ground.getOutPorts()[0].link<DefaultLinkModel>(resistance.getInPorts()[0]);
                                 model.addLink(link);
                                 for (let i = 0; i < 7; i ++) {
-                                    let led = new LEDNodeModel(false, false, SevenSegmentNodeModel.place[i][0], SevenSegmentNodeModel.place[i][1], model, "G");
+                                    let led = new LEDNodeModel(false, false, SevenSegmentNodeModel.place[i][0], SevenSegmentNodeModel.place[i][1], "G");
                                     SevenSegmentNodeModel.nodes.push(led);
                                     PeripheralNodeModel.all_peripherals.push(led);
                                     model.addNode(led);

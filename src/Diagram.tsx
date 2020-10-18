@@ -1,29 +1,19 @@
-import React from 'react';
-
-import createEngine, {
-    DiagramEngine,
-    DiagramModel,
-} from '@projectstorm/react-diagrams';
-
 import {
-    CanvasWidget,
+    CanvasWidget
 } from '@projectstorm/react-canvas-core';
-
-import ChipNodeModel from './Nodes/ChipNodeModel';
-import GroundNodeModel from './Nodes/GroundNodeModel';
-import VoltageNodeModel from './Nodes/VoltageNodeModel';
-import LEDNodeModel from './Nodes/LEDNodeModel';
-import ResistanceNodeModel from './Nodes/ResistanceNodeModel';
-import SimulateNodeModel from './Nodes/CircuitSimulator';
-import UltraSonicNodeModel from './Nodes/UltraSonicNodeModel';
-import SwitchNodeModel from './Nodes/SwitchNodeModel';
-import LDRNodeModel from './Nodes/LDRNodeModel';
-import VoltagePotNodeModel from './Nodes/VoltagePotNodeModel';
-import HandNodeModel from './Nodes/HandNodeModel';
-import SevenSegmentNodeModel from './Nodes/SevenSegmentNodeModel';
+import createEngine, {
+    DefaultPortModel,
+    DiagramEngine,
+    DiagramModel
+} from '@projectstorm/react-diagrams';
 import { ipcRenderer } from 'electron';
-
+import React from 'react';
 import { MachineStateEventData } from '../common/QemuConnectorTypes';
+import CircuitSimulator from './CircuitSimulator';
+import { LEDNodeFactory } from './CustomNodes/LEDNodeFactory';
+import { SimplePortFactory } from './CustomNodes/SimplePortFactory';
+import ChipNodeModel from './Nodes/ChipNodeModel';
+import PeripheralNodeModel from './Nodes/PeripheralNodeModel';
 
 interface MyProps {
 }
@@ -39,9 +29,48 @@ interface MyState {
 
 let model = new DiagramModel();
 let engine: DiagramEngine = createEngine({ registerDefaultZoomCanvasAction: false });
+engine.getPortFactories().registerFactory(
+    new SimplePortFactory('led', (config) => new DefaultPortModel(config))
+);
+engine.getNodeFactories().registerFactory(new LEDNodeFactory()); 
 
 export function getModel() { return model; }
 export function getEngine() { return engine; }
+
+function processMachineStateUpdate(state_update: MachineStateEventData) {
+    console.log("machine updated");
+    switch(state_update.module) {
+        case "GPIO":
+            if(state_update.event === "dir_change") {
+                const port = state_update.port;
+                for(let i = 0; i < 32; i++) {
+                    const pinInput = !(state_update.new_dir & (1 << i));
+                    const chip = PeripheralNodeModel.chips[port] as ChipNodeModel;
+                    chip.pin_directions[i] = pinInput;
+                }
+            } else if(state_update.event === "mask_change") {
+                // TODO ignore this update lul
+            } else if(state_update.event === "pin_change") {
+                const port = state_update.port;
+                for(let i = 0; i < 32; i++) {
+                    const pinVoltage = (!!(state_update.new_pin & (1 << i))) ? 3.3 : 0;
+                    const chip = PeripheralNodeModel.chips[port] as ChipNodeModel;
+                    chip.pin_voltages_initial[i] = pinVoltage;
+                }
+            }
+            break;
+        case "IOCON":
+            if(state_update.event === "func_change") {
+                // TODO need to retrieve machine state according to
+                // updated function of the pin
+            }
+            break;
+        default:
+            
+            break;
+    }
+    getEngine().repaintCanvas();
+}
 
 export default class CircuitDisplay extends React.Component<MyProps, MyState> {
 
@@ -56,20 +85,16 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
             message: "",
             info: "All information will be displayed here."
         };
-        this.handleSubmitUltraSonic = this.handleSubmitUltraSonic.bind(this);
-        this.handleChangeUltraSonic = this.handleChangeUltraSonic.bind(this);
-        this.handleSubmitLight = this.handleSubmitLight.bind(this);
-        this.handleChangeLight = this.handleChangeLight.bind(this);
-        this.handleSubmitMessage = this.handleSubmitMessage.bind(this);
-        this.handleChangeMessage = this.handleChangeMessage.bind(this);
-        this.handleSubmitJoystickLeft = this.handleSubmitJoystickLeft.bind(this);
-        this.handleSubmitJoystickUp = this.handleSubmitJoystickUp.bind(this);
-        this.handleSubmitJoystickRight = this.handleSubmitJoystickRight.bind(this);
-        this.handleSubmitJoystickDown = this.handleSubmitJoystickDown.bind(this);
-        this.handleSubmitJoystickCenter = this.handleSubmitJoystickCenter.bind(this);
     }
 
     componentDidMount() {
+        let prev_height = 100;
+        for(let i = 0; i < 5; i++) {
+            const port = new ChipNodeModel(true, 600, prev_height, model, i);
+            prev_height += 550;
+            model.addNode(port);
+        }
+        
         engine.setModel(model);
         this.setState({
             initialized: true,
@@ -78,76 +103,10 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
         ipcRenderer.on('on-machine-state-changed', (ev, state_change_ev) => {
             const m_state_change_ev = state_change_ev as MachineStateEventData;
 
-            switch(m_state_change_ev.module) {
-                case "GPIO":
-                    if(m_state_change_ev.event === "dir_change") {
-                        
-                    } else if(m_state_change_ev.event === "mask_change") {
+            processMachineStateUpdate(m_state_change_ev);
 
-                    } else if(m_state_change_ev.event === "pin_change") {
-
-                    }
-                    break;
-                case "IOCON":
-                    if(m_state_change_ev.event === "func_change") {
-
-                    }
-                    break;
-                default:
-                    
-                    break;
-            }
+            CircuitSimulator.startSimulation();
         });
-    }
-
-    componentDidUpdate(prevProps: MyProps, prevState: MyState) {
-
-    }
-
-    handleChangeUltraSonic(event: any) {
-        this.setState({ultraSonic: event.target.value});
-    }
-
-    handleSubmitUltraSonic(event: any) {
-        UltraSonicNodeModel.ObstacleDistance = this.state.ultraSonic;
-        event.preventDefault();
-    }
-
-    handleChangeLight(event: any) {
-        this.setState({light: event.target.value});
-    }
-
-    handleSubmitLight(event: any) {
-        LDRNodeModel.Light = this.state.light;
-        event.preventDefault();
-    }
-
-    handleChangeMessage(event: any) {
-        this.setState({message: event.target.value});
-    }
-
-    handleSubmitMessage(event: any) {
-        event.preventDefault();
-    }
-
-    handleSubmitJoystickLeft(event: any) {
-        event.preventDefault();
-    }
-
-    handleSubmitJoystickUp(event: any) {
-        event.preventDefault();
-    }
-
-    handleSubmitJoystickRight(event: any) {
-        event.preventDefault();
-    }
-
-    handleSubmitJoystickDown(event: any) {
-        event.preventDefault();
-    }
-
-    handleSubmitJoystickCenter(event: any) {
-        event.preventDefault();
     }
 
     render() {
@@ -158,58 +117,6 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
                 className={"diagram"}/>);
         }
         return null;
-        /*return (
-            <div className="diagram-container">
-                
-                <div className={"info"}>
-                    <p>
-                        {this.state.info}
-                    </p>
-                </div>
-                <div className={"message"}>
-                    <form onSubmit={this.handleSubmitMessage}>
-                    <label>
-                            UART Message:&nbsp;
-                            <input type="text" name="name" size={40} maxLength={128} value={this.state.message} onChange={this.handleChangeMessage} />
-                        </label>
-                        <input type="submit" value="Send To UART" />
-                    </form>
-                    <br />
-                    <button onClick={this.handleSubmitJoystickLeft}>
-                        Joystick Left
-                    </button>
-                    <button onClick={this.handleSubmitJoystickUp}>
-                        Joystick Up
-                    </button>
-                    <button onClick={this.handleSubmitJoystickRight}>
-                        Joystick Right
-                    </button>
-                    <button onClick={this.handleSubmitJoystickDown}>
-                        Joystick Down
-                    </button>
-                    <button onClick={this.handleSubmitJoystickCenter}>
-                        Joystick Center
-                    </button>
-                </div>
-                <div className={"bottom"}>
-                    <form onSubmit={this.handleSubmitUltraSonic}>
-                        <label>
-                            Obstacle Distance (mm):&nbsp;
-                            <input type="number" name="name" min="1" max="10000" value={this.state.ultraSonic} onChange={this.handleChangeUltraSonic} />
-                        </label>
-                        <input type="submit" value="Set For Ultrasonic Sensor" />
-                    </form>
-                    <br />
-                    <form onSubmit={this.handleSubmitLight}>
-                        <label>
-                            Light (lm):&nbsp;
-                            <input type="number" name="name" min="1" max="100000" value={this.state.light} onChange={this.handleChangeLight} />
-                        </label>
-                        <input type="submit" value="Set For Light" />
-                    </form>
-                </div>
-            </div>
-        );*/
     }
 
 }

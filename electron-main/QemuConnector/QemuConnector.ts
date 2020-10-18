@@ -71,18 +71,29 @@ class QemuConnector {
 
     static async start_qemu(exe_file: string) {
         this.machineState = new MachineState();
-
         const qemu = await qemu_lpc_ctrl.start_qemu(exe_file);
         qemu_lpc_ctrl.SenderMQ.open();
         qemu_lpc_ctrl.ReceiverMQ.open();
-
         qemu_lpc_ctrl.ReceiverMQ.set_receive_handler((msg) => {
             this.updateMachineState(msg);
             if(QemuConnector.eventHandler !== undefined) {
                 QemuConnector.eventHandler(msg);
             }
         });
+        const orig_setOnExit = qemu.setOnExit;
+        qemu.setOnExit = (onExit) => 
+                orig_setOnExit((err?: Error) => {
+                    qemu_lpc_ctrl.SenderMQ.close();
+                    qemu_lpc_ctrl.ReceiverMQ.close();
+                    onExit(err);
+                });
 
+        const orig_kill = qemu.kill;
+        qemu.kill = () => {
+            qemu_lpc_ctrl.SenderMQ.close();
+            qemu_lpc_ctrl.ReceiverMQ.close();
+            orig_kill();
+        }
         return qemu;
     }
 

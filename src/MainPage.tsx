@@ -30,10 +30,12 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-let Y = 15;
-let X = 150;
+let _y = 15;
+let _x = 150;
 
 function addItem(id: string) {
+  const X = _x - getModel().getOffsetX();
+  const Y = _y - getModel().getOffsetY();
   if (id === "gnd") {
     let node = new GroundNodeModel(false, X, Y, getModel());
     getModel().addNode(node);
@@ -50,32 +52,32 @@ function addItem(id: string) {
     PeripheralNodeModel.all_peripherals.push(node);
   }
   else if (id === "red1") {
-    let node = new LEDNodeModel(true, false, X, Y, getModel(), "R");
+    let node = new LEDNodeModel(true, false, X, Y, "R");
     getModel().addNode(node);
     PeripheralNodeModel.all_peripherals.push(node);
   }
   else if (id === "red2") {
-    let node = new LEDNodeModel(false, false, X, Y, getModel(), "R");
+    let node = new LEDNodeModel(false, false, X, Y, "R");
     getModel().addNode(node);
     PeripheralNodeModel.all_peripherals.push(node);
   }
   else if (id === "green1") {
-    let node = new LEDNodeModel(true, false, X, Y, getModel(), "G");
+    let node = new LEDNodeModel(true, false, X, Y, "G");
     getModel().addNode(node);
     PeripheralNodeModel.all_peripherals.push(node);
   }
   else if (id === "green2") {
-    let node = new LEDNodeModel(false, false, X, Y, getModel(), "G");
+    let node = new LEDNodeModel(false, false, X, Y, "G");
     getModel().addNode(node);
     PeripheralNodeModel.all_peripherals.push(node);
   }
   else if (id === "blue1") {
-    let node = new LEDNodeModel(true, false, X, Y, getModel(), "B");
+    let node = new LEDNodeModel(true, false, X, Y, "B");
     getModel().addNode(node);
     PeripheralNodeModel.all_peripherals.push(node);
   }
   else if (id === "blue2") {
-    let node = new LEDNodeModel(false, false, X, Y, getModel(), "B");
+    let node = new LEDNodeModel(false, false, X, Y, "B");
     getModel().addNode(node);
     PeripheralNodeModel.all_peripherals.push(node);
   }
@@ -109,13 +111,14 @@ function addItem(id: string) {
     getModel().addNode(node);
     PeripheralNodeModel.all_peripherals.push(node);
   }
-  Y = Y + 15;
-  X = X + 15;
-  if (Y > 600) {
-    Y = 15;
+  getEngine().repaintCanvas();
+  _y = _y + 15;
+  _x = _x + 15;
+  if (_y > 600) {
+    _y = 15;
   }
-  if (X > 600) {
-    X = 150;
+  if (_x > 600) {
+    _x = 150;
   }
 }
 

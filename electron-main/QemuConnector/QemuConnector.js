@@ -104,7 +104,7 @@ var QemuConnector = /** @class */ (function () {
     };
     QemuConnector.start_qemu = function (exe_file) {
         return __awaiter(this, void 0, void 0, function () {
-            var qemu;
+            var qemu, orig_setOnExit, orig_kill;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -121,6 +121,20 @@ var QemuConnector = /** @class */ (function () {
                                 QemuConnector.eventHandler(msg);
                             }
                         });
+                        orig_setOnExit = qemu.setOnExit;
+                        qemu.setOnExit = function (onExit) {
+                            return orig_setOnExit(function (err) {
+                                qemu_lpc4088_controller_1.default.SenderMQ.close();
+                                qemu_lpc4088_controller_1.default.ReceiverMQ.close();
+                                onExit(err);
+                            });
+                        };
+                        orig_kill = qemu.kill;
+                        qemu.kill = function () {
+                            qemu_lpc4088_controller_1.default.SenderMQ.close();
+                            qemu_lpc4088_controller_1.default.ReceiverMQ.close();
+                            orig_kill();
+                        };
                         return [2 /*return*/, qemu];
                 }
             });

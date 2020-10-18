@@ -1,4 +1,5 @@
 import { DefaultNodeModel, LinkModel } from '@projectstorm/react-diagrams';
+import { DeserializeEvent,  } from '@projectstorm/react-canvas-core';
 
 export enum Peripheral_Type {
     None,
@@ -30,6 +31,20 @@ export default class PeripheralNodeModel extends DefaultNodeModel {
             return element !== nodeModel;
         });
 	}
+
+    serialize() {
+        const serialized = super.serialize();
+        serialized["PERIPHAREL_TYPE"] = this.PERIPHAREL_TYPE;
+        return serialized;
+    }
+
+    deserialize(ev: DeserializeEvent<this>) {
+        super.deserialize(ev);
+        this.PERIPHAREL_TYPE = ev.data["PERIPHAREL_TYPE"];
+        if(ev.data["PERIPHAREL_TYPE"] !== Peripheral_Type.Chip) {
+            PeripheralNodeModel.all_peripherals.push(this);
+        }
+    }
 
     updateColour (colour: string) {
         this.options.color = colour;

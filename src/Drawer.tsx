@@ -25,12 +25,9 @@ const list_options = [
     {
         id: "leds",
         options: [
-            { id: "red1", text: "Red LED + -" },
-            { id: "red2", text: "Red LED - +" },
-            { id: "green1", text: "Green LED + -"},
-            { id: "green2", text: "Green LED - +"},
-            { id: "blue1", text: "Blue LED + -"},
-            { id: "blue2", text: "Blue LED - +"},
+            { id: "red1", text: "Red LED" },
+            { id: "green1", text: "Green LED"},
+            { id: "blue1", text: "Blue LED"},
         ]
     },
     {
