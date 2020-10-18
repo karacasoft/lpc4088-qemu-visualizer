@@ -30,8 +30,8 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-let Y = 5;
-let X = 5;
+let Y = 15;
+let X = 150;
 
 function addItem(id: string) {
   if (id === "gnd") {
@@ -109,8 +109,14 @@ function addItem(id: string) {
     getModel().addNode(node);
     PeripheralNodeModel.all_peripherals.push(node);
   }
-  Y = (Y + 5) % 100;
-  Y = Y + 5;
+  Y = Y + 15;
+  X = X + 15;
+  if (Y > 600) {
+    Y = 15;
+  }
+  if (X > 600) {
+    X = 150;
+  }
 }
 
 let qemuInterface: QemuProcessInterface | null;
