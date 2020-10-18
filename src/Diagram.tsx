@@ -70,45 +70,6 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
     }
 
     componentDidMount() {
-<<<<<<< HEAD
-        // Canvas Preparation \\
-        const LINES = [10, 80, 150];
-
-        // Set peripherals
-        model.addNode(new GroundNodeModel(true, 10, LINES[0], model));
-        model.addNode(new VoltageNodeModel(true, 110, LINES[0], model, 3.3));
-        model.addNode(new ResistanceNodeModel(true, 210, LINES[0], model, 1000));
-
-        model.addNode(new LEDNodeModel(true, true, 10, LINES[1], model, "R"));
-        model.addNode(new LEDNodeModel(false, true, 95, LINES[1], model, "R"));
-        model.addNode(new LEDNodeModel(true, true, 180, LINES[1], model, "G"));
-        model.addNode(new LEDNodeModel(false, true, 265, LINES[1], model, "G"));
-        model.addNode(new LEDNodeModel(true, true, 350, LINES[1], model, "B"));
-        model.addNode(new LEDNodeModel(false, true, 435, LINES[1], model, "B"));
-        model.addNode(new LDRNodeModel(true, true, 520, LINES[1], model));
-        model.addNode(new LDRNodeModel(false, true, 605, LINES[1], model));
-
-        model.addNode(new UltraSonicNodeModel(true, 10, LINES[2], model));
-        model.addNode(new VoltagePotNodeModel(true, 85, LINES[2], model));
-        model.addNode(new SwitchNodeModel(true, 235, LINES[2], model));
-        model.addNode(new HandNodeModel(0, true, 380, LINES[2], model));
-        model.addNode(new HandNodeModel(1, true, 435, LINES[2], model));
-
-        // Set chip
-        model.addNode(new ChipNodeModel(true, 1000, LINES[0], model, 0));
-        model.addNode(new ChipNodeModel(true, 1100, LINES[0], model, 1));
-        model.addNode(new ChipNodeModel(true, 1200, LINES[0], model, 2));
-        model.addNode(new ChipNodeModel(true, 1300, LINES[0], model, 3));
-        model.addNode(new ChipNodeModel(true, 1400, LINES[0], model, 4));
-        model.addNode(new ChipNodeModel(true, 1500, LINES[0], model, 5));
-
-        // Set buttons
-        model.addNode(new SimulateNodeModel(1300, LINES[1], model));
-        model.addNode(new SevenSegmentNodeModel(true, 600, LINES[0], model));
-        model.addNode(new SevenSegmentNodeModel(false, 730, LINES[0], model));
-
-=======
->>>>>>> 5eab2d33a679ebd81b14994f8fdbb3cb96a3f67a
         engine.setModel(model);
         this.setState({
             initialized: true,
