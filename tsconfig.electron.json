@@ -15,7 +15,7 @@
       "declaration": true,
     },
     "include": [
-      "electron-main", "electron.ts", "common"
+      "src/electron-main/", "electron.ts", "src/common/"
     ]
   }
   

@@ -2,7 +2,7 @@ import electron, { ipcMain, app, BrowserWindow } from "electron";
 import url from 'url';
 import path from 'path';
 import { QemuProcessInterface } from "qemu-lpc4088-controller/dist/apprunner/qemu_runner";
-import QemuConnector from "./electron-main/QemuConnector/QemuConnector";
+import QemuConnector from "./src/electron-main/QemuConnector/QemuConnector";
 
 let mainWindow: BrowserWindow | null;
 let optionsWindow: BrowserWindow | null;
@@ -73,6 +73,9 @@ function createWindow() {
                     }
                 });
                 _qemuInterface.run();
+                if(mainWindow !== null && QemuConnector.machineState) {
+                    mainWindow.webContents.send("iocon-state", QemuConnector.machineState.getIoconState);
+                }
                 if(optionsWindow !== null) {
                     optionsWindow.webContents.send("exec-started");
                 }

@@ -5,6 +5,10 @@ import ChipPortModel from '../Ports/ChipPortModel';
 
 export default class ChipNodeModel extends PeripheralNodeModel {
 
+    GPIO_pin_directions: boolean[] = [];
+    GPIO_pin_voltages: number[] = [];
+    GPIO_pin_voltages_initial: number[] = [];
+
     pin_directions: boolean[] = [];  // True: In, False: Out
     pin_voltages: number[] = [];
     pin_voltages_initial: number[] = [];

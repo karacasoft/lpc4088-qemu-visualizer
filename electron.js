@@ -49,7 +49,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var electron_1 = require("electron");
 var url_1 = __importDefault(require("url"));
 var path_1 = __importDefault(require("path"));
-var QemuConnector_1 = __importDefault(require("./electron-main/QemuConnector/QemuConnector"));
+var QemuConnector_1 = __importDefault(require("./src/electron-main/QemuConnector/QemuConnector"));
 var mainWindow;
 var optionsWindow;
 var _filename = null;
@@ -124,6 +124,9 @@ function createWindow() {
                         }
                     });
                     _qemuInterface.run();
+                    if (mainWindow !== null && QemuConnector_1.default.machineState) {
+                        mainWindow.webContents.send("iocon-state", QemuConnector_1.default.machineState.getIoconState);
+                    }
                     if (optionsWindow !== null) {
                         optionsWindow.webContents.send("exec-started");
                     }

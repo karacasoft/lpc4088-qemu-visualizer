@@ -17,16 +17,18 @@ export default class CircuitSimulator {
             chip.pin_directions = [];
             for(let i = 0; i < 32; i++) {
                 chip.pin_directions.push(true);
+                chip.GPIO_pin_directions.push(true);
             }
             chip.pin_voltages_initial = [];
             for(let i = 0; i < 32; i++) {
                 chip.pin_voltages_initial.push(0);
+                chip.GPIO_pin_voltages_initial.push(0);
             }
         });
     }
 
     static startSimulation() {
-        this.removeUnconnectedLinks(getModel());
+        //this.removeUnconnectedLinks(getModel());
         this.clearLEDS(getModel());
         
         // Gather all chip ports

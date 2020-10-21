@@ -1,5 +1,9 @@
-export declare type MachineStateEventData = GPIOStateEventData | IOCONStateEventData;
-declare type GPIOStateEventData = GPIOStateDIRChangeEventData | GPIOStateMASKChangeEventData | GPIOStatePINChangeEventData;
+export type MachineStateEventData = GPIOStateEventData | IOCONStateEventData;
+
+type GPIOStateEventData = GPIOStateDIRChangeEventData |
+                          GPIOStateMASKChangeEventData |
+                          GPIOStatePINChangeEventData;
+
 interface GPIOStateDIRChangeEventData {
     module: "GPIO";
     event: "dir_change";
@@ -7,6 +11,7 @@ interface GPIOStateDIRChangeEventData {
     old_dir: number;
     new_dir: number;
 }
+
 interface GPIOStateMASKChangeEventData {
     module: "GPIO";
     event: "mask_change";
@@ -14,6 +19,7 @@ interface GPIOStateMASKChangeEventData {
     old_mask: number;
     new_mask: number;
 }
+
 interface GPIOStatePINChangeEventData {
     module: "GPIO";
     event: "pin_change";
@@ -21,7 +27,9 @@ interface GPIOStatePINChangeEventData {
     old_pin: number;
     new_pin: number;
 }
-declare type IOCONStateEventData = IOCONStateFuncChangeEventData;
+
+type IOCONStateEventData = IOCONStateFuncChangeEventData;
+
 interface IOCONStateFuncChangeEventData {
     module: "IOCON";
     event: "func_change";
@@ -30,4 +38,23 @@ interface IOCONStateFuncChangeEventData {
     old_func: number;
     new_func: number;
 }
-export {};
+
+interface GPIOPortState {
+    DIR: number;
+    MASK: number;
+    PIN: number;
+}
+
+export interface GPIOState {
+    PORTS: GPIOPortState[];
+}
+
+type IOCONPinState = number;
+
+interface IOCONPortState {
+    [k: number]: IOCONPinState;
+}
+
+export interface IOCONState {
+    PORTS: IOCONPortState[];
+}

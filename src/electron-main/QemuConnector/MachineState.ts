@@ -1,22 +1,4 @@
-interface GPIOPortState {
-    DIR: number;
-    MASK: number;
-    PIN: number;
-}
-
-interface GPIOState {
-    PORTS: GPIOPortState[];
-}
-
-type IOCONPinState = number;
-
-interface IOCONPortState {
-    [k: number]: IOCONPinState;
-}
-
-interface IOCONState {
-    PORTS: IOCONPortState[];
-}
+import { GPIOState, IOCONState } from "../../common/QemuConnectorTypes";
 
 class MachineState {
     gpioState: GPIOState;

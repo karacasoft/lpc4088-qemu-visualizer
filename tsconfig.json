@@ -20,6 +20,10 @@
     "jsx": "react"
   },
   "include": [
-    "src", "common"
+    "src/", "common"
+  ],
+  "exclude": [
+    "src/electron-main/"
   ]
+
 }
