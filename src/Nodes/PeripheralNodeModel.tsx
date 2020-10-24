@@ -1,4 +1,4 @@
-import { DefaultNodeModel, LinkModel } from '@projectstorm/react-diagrams';
+import { DefaultNodeModel, LinkModel, PortModel } from '@projectstorm/react-diagrams';
 import { DeserializeEvent,  } from '@projectstorm/react-canvas-core';
 
 export enum Peripheral_Type {
@@ -57,6 +57,14 @@ export default class PeripheralNodeModel extends DefaultNodeModel {
     getOtherConnections(port_id: string): string[][] {
         let connections: string[][] = [];
         return connections;
+    }
+
+    followConnection(port_id: string): PortModel[] {
+        const other_port_ids = Object.values(this.getPorts()).map(x => x.getID()).filter(x => x !== port_id);
+        const other_ports = other_port_ids.map(x => {
+            return Object.values(this.getPorts()).find(y => y.getID() === x) as PortModel;
+        });
+        return other_ports;
     }
 
     static getPeripheral(node_id: string) {

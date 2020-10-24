@@ -12,21 +12,8 @@ export default class LDRNodeModel extends PeripheralNodeModel {
         this.addInPort("<=");
         this.addOutPort("=>");
         this.setPosition(x, y);
-        if (locked === true) {
-            this.setLocked();
-            
-            this.registerListener(
-                {
-                    selectionChanged: () => {
-                        if (this.isSelected()) {
-                            let node = new LDRNodeModel(false, x, y + 400, model);
-                            model.addNode(node);
-                            PeripheralNodeModel.all_peripherals.push(node);
-                        }
-                    }
-                }
-            );
-        }
+        this.setLocked(locked);
+        PeripheralNodeModel.all_peripherals.push(this);
         this.PERIPHAREL_TYPE = Peripheral_Type.LDR;
     }
 

@@ -1,6 +1,24 @@
-import { DiagramModel } from '@projectstorm/react-diagrams';
+import { DiagramListener, DiagramModel, LinkModelListener, PortModel } from '@projectstorm/react-diagrams';
 import PeripheralNodeModel, { Peripheral_Type } from './PeripheralNodeModel';
 import UltraSonicPortModel from '../Ports/UltraSonicPortModel';
+
+function validateConnectedNodeType(port: PortModel, type: Peripheral_Type): boolean {
+    let vcc_links = port.getLinks();
+    if(Object.keys(vcc_links).length === 0) return false;
+    let src_port = Object.values(vcc_links)[0].getSourcePort();
+    let target_port;
+    if(src_port === port) {
+        target_port = Object.values(vcc_links)[0].getTargetPort();
+    } else {
+        target_port = src_port;
+        src_port = Object.values(vcc_links)[0].getTargetPort();
+    }
+    if(!target_port) return false;
+    if((target_port.getNode() as PeripheralNodeModel).PERIPHAREL_TYPE !== type) {
+        return false;
+    }
+    return true;
+}
 
 export default class UltraSonicNodeModel extends PeripheralNodeModel {
 
@@ -9,24 +27,28 @@ export default class UltraSonicNodeModel extends PeripheralNodeModel {
     constructor(locked: boolean, x: number, y: number, model: DiagramModel) {
         super({ name: "UltraSonic", color: "rgb(64, 128, 255)" });
         this.addOutPort("Vcc");
-        this.addOutPort("Trig");
-        this.addOutPort("Echo");
+        const trig_port = this.addOutPort("Trig");
+        const echo_port = this.addOutPort("Echo");
         this.addOutPort("GND");
         this.setPosition(x, y);
-        if (locked === true) {
-            this.setLocked();
-            this.registerListener(
-                {
-                    selectionChanged: () => {
-                        if (this.isSelected()) {
-                            let node = new UltraSonicNodeModel(false, x, y + 400, model);
-                            model.addNode(node);
-                            PeripheralNodeModel.all_peripherals.push(node);
+        this.setLocked(locked);
+
+        model.registerListener({
+            linksUpdated: (ev) => {
+                if(ev.isCreated) {
+                    ev.link.registerListener({
+                        sourcePortChanged: (ev) => {
+                            if(ev.port === trig_port && validateConnectedNodeType(trig_port, Peripheral_Type.Chip)) {
+                                // TODO setup listener for connected port and pin
+                            }
                         }
-                    }
+                    } as LinkModelListener);
                 }
-            );
-        }
+            }
+        } as DiagramListener);
+        
+
+        PeripheralNodeModel.all_peripherals.push(this);
         this.PERIPHAREL_TYPE = Peripheral_Type.UltraSonic;
     }
 
@@ -40,6 +62,15 @@ export default class UltraSonicNodeModel extends PeripheralNodeModel {
         const port = new UltraSonicPortModel(false, label, label);
         this.addPort(port);
         return port;
+    }
+
+    followConnection(port_id: string): PortModel[] {
+        return [];
+    }
+
+    checkConnectionsValid(): boolean {
+        return validateConnectedNodeType(this.getOutPorts()[0], Peripheral_Type.Voltage) &&
+            validateConnectedNodeType(this.getOutPorts()[3], Peripheral_Type.Ground);
     }
 
     getOtherConnections(port_id: string): string[][] {

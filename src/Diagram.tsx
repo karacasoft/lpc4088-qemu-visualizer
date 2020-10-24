@@ -1,10 +1,13 @@
 import {
-    CanvasWidget
+    CanvasWidget,
+    CanvasEngineListener
 } from '@projectstorm/react-canvas-core';
 import createEngine, {
     DefaultPortModel,
     DiagramEngine,
-    DiagramModel
+    DiagramListener,
+    DiagramModel,
+    LinkModelListener,
 } from '@projectstorm/react-diagrams';
 import { ipcRenderer } from 'electron';
 import React from 'react';
@@ -28,8 +31,6 @@ interface MyState {
     info: string;
 }
 
-let iocon_state: IOCONState | null = null;
-
 let model = new DiagramModel();
 let engine: DiagramEngine = createEngine({ registerDefaultZoomCanvasAction: false });
 engine.getPortFactories().registerFactory(
@@ -46,14 +47,13 @@ function processMachineStateUpdate(state_update: MachineStateEventData) {
             if(state_update.event === "dir_change") {
                 const port = state_update.port;
                 for(let i = 0; i < 32; i++) {
-                    let iocon_func = iocon_state?.PORTS[port][i];
+                    let iocon_func = CircuitSimulator.iocon_state?.PORTS[port][i];
                     iocon_func = iocon_func ? iocon_func : 0;
 
                     const pinInput = !(state_update.new_dir & (1 << i));
                     const chip = PeripheralNodeModel.chips[port] as ChipNodeModel;
                     chip.GPIO_pin_directions[i] = pinInput;
                     if(IOCON_LOOKUP_TABLE[port][i][iocon_func]?.module === "GPIO") {
-                        console.log("wow");
                         chip.pin_directions[i] = pinInput;
                     }
                 }
@@ -62,7 +62,7 @@ function processMachineStateUpdate(state_update: MachineStateEventData) {
             } else if(state_update.event === "pin_change") {
                 const port = state_update.port;
                 for(let i = 0; i < 32; i++) {
-                    let iocon_func = iocon_state?.PORTS[port][i];
+                    let iocon_func = CircuitSimulator.iocon_state?.PORTS[port][i];
                     iocon_func = iocon_func ? iocon_func : 0;
 
                     const pinVoltage = (!!(state_update.new_pin & (1 << i))) ? 3.3 : 0;
@@ -75,9 +75,11 @@ function processMachineStateUpdate(state_update: MachineStateEventData) {
             }
             break;
         case "IOCON":
+            console.log(state_update);
             if(state_update.event === "func_change") {
-                if(iocon_state !== null) {
-                    iocon_state.PORTS[state_update.port][state_update.pin] = state_update.new_func;
+                
+                if(CircuitSimulator.iocon_state !== null) {
+                    CircuitSimulator.iocon_state.PORTS[state_update.port][state_update.pin] = state_update.new_func;
                 }
             }
             break;
@@ -104,6 +106,7 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
     }
 
     componentDidMount() {
+        CircuitSimulator.initializeSimulation();
         let prev_height = 100;
         for(let i = 0; i < 5; i++) {
             const port = new ChipNodeModel(true, 600, prev_height, model, i);
@@ -116,10 +119,28 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
             initialized: true,
         });
 
+        model.registerListener({
+            linksUpdated: (ev) => {
+                if(ev.isCreated) {
+                    const l = (ev: any) => {
+                        CircuitSimulator.startSimulation();
+                        console.log((PeripheralNodeModel.chips[0] as ChipNodeModel).pin_voltages);
+                    };
+                    ev.link.registerListener({
+                        sourcePortChanged: l,
+                        targetPortChanged: l,
+                        entityRemoved: l,
+                    } as LinkModelListener);
+                }
+            },
+        } as DiagramListener);
+
+        
+
         ipcRenderer.on('iocon-state', (ev, iocon) => {
             console.log(iocon);
-            iocon_state = iocon as IOCONState;
-        })
+            CircuitSimulator.iocon_state = iocon as IOCONState;
+        });
 
         ipcRenderer.on('on-machine-state-changed', (ev, state_change_ev) => {
             const m_state_change_ev = state_change_ev as MachineStateEventData;
@@ -128,6 +149,18 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
 
             CircuitSimulator.startSimulation();
         });
+
+        CircuitSimulator.onInputChangeListener = (port, pin, val) => {
+            if(CircuitSimulator.iocon_state) {
+                const iocon_func = CircuitSimulator.iocon_state.PORTS[port][pin];
+                console.log(iocon_func);
+                if((IOCON_LOOKUP_TABLE[port][pin][iocon_func]?.module === "GPIO")) {
+                    
+                    ipcRenderer.send("gpio-pin-change", port, pin, (val > 2.0) ? 1 : 0);
+                }
+            }
+            
+        };
     }
 
     render() {

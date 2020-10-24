@@ -13,8 +13,11 @@ export default class ChipNodeModel extends PeripheralNodeModel {
     pin_voltages: number[] = [];
     pin_voltages_initial: number[] = [];
 
+    lpc_4088_port: number;
+
     constructor(locked: boolean, x: number, y: number, model: DiagramModel, part: number) {
         super({ name: "LPC4088 Port " + part, color: "rgb(255, 0, 64)" });
+        this.lpc_4088_port = part;
         this.setPosition(x, y);
         for (let i = 0; i <= 31; i ++) { 
             this.addInPort(String(i));

@@ -1,4 +1,4 @@
-export type MachineStateEventData = GPIOStateEventData | IOCONStateEventData;
+export type MachineStateEventData = GPIOStateEventData | IOCONStateEventData | TIMERStateEventData | UARTStateEventData;
 
 type GPIOStateEventData = GPIOStateDIRChangeEventData |
                           GPIOStateMASKChangeEventData |
@@ -39,6 +39,43 @@ interface IOCONStateFuncChangeEventData {
     new_func: number;
 }
 
+type TIMERStateEventData = TIMERStateRegChangeEventData | TIMERStateEMRChangeEventData;
+
+interface TIMERStateRegChangeEventData {
+    module: "TIMER";
+    event: "reg_change";
+    timer_nr: number;
+    offset: number;
+    old_val: number;
+    new_val: number;
+}
+
+interface TIMERStateEMRChangeEventData {
+    module: "TIMER";
+    event: "emr_change";
+    timer_nr: number;
+    old_emr: number;
+    new_emr: number;
+}
+
+type UARTStateEventData = UARTStateCharReceiveEventData | UARTStateRegChangeEventData;
+
+interface UARTStateRegChangeEventData {
+    module: "UART";
+    event: "reg_change";
+    uart_nr: number;
+    offset: number;
+    old_val: number;
+    new_val: number;
+}
+
+interface UARTStateCharReceiveEventData {
+    module: "UART";
+    event: "char_receive";
+    uart_nr: number;
+    received_char: string;
+}
+
 interface GPIOPortState {
     DIR: number;
     MASK: number;
@@ -57,4 +94,8 @@ interface IOCONPortState {
 
 export interface IOCONState {
     PORTS: IOCONPortState[];
+}
+
+export interface TIMERState {
+    [k: number]: number,
 }

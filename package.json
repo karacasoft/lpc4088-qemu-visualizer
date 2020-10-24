@@ -87,7 +87,7 @@
   "scripts": {
     "start": "node scripts/start.js",
     "electron:build": "tsc -p tsconfig.electron.json",
-    "electron": "npm run electron:build && electron --inspect=5858 .",
+    "electron": "npm run electron:build && electron .",
     "electron-dev": "node ./electron-dev-start.js",
     "electron-pack": "npm run electron:build && npm run build && electron-packager . \"LPC4088 Visualizer\" --platform=linux --arch=x64 --out=./package",
     "build": "node scripts/build.js",

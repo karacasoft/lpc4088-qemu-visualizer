@@ -1,4 +1,4 @@
-import { DiagramModel } from '@projectstorm/react-diagrams';
+import { DiagramModel, PortModel } from '@projectstorm/react-diagrams';
 import PeripheralNodeModel, { Peripheral_Type } from './PeripheralNodeModel';
 import GroundPortModel from '../Ports/GroundPortModel';
 
@@ -26,6 +26,10 @@ export default class GroundNodeModel extends PeripheralNodeModel {
         this.PERIPHAREL_TYPE = Peripheral_Type.Ground;
     }
 
+    followConnection(port_id: string): PortModel[] {
+        return [];
+    }
+    
     addInPort(label: string): GroundPortModel {
         const port = new GroundPortModel(true, label, label);
         this.addPort(port);

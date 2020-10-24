@@ -49,7 +49,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var electron_1 = require("electron");
 var url_1 = __importDefault(require("url"));
 var path_1 = __importDefault(require("path"));
+var sender_1 = require("qemu-lpc4088-controller/dist/sender");
 var QemuConnector_1 = __importDefault(require("./src/electron-main/QemuConnector/QemuConnector"));
+var qemu_mq_types_1 = require("qemu-lpc4088-controller/dist/qemu_mq_types");
 var mainWindow;
 var optionsWindow;
 var _filename = null;
@@ -92,6 +94,20 @@ function createWindow() {
     optionsWindow.webContents.openDevTools();
     optionsWindow.on('closed', function () {
         optionsWindow = null;
+    });
+    electron_1.ipcMain.on('gpio-pin-change', function (ev, port, pin, val) {
+        if (_qemuInterface) {
+            var port_nr = qemu_mq_types_1.toPortType(port);
+            var pin_nr = qemu_mq_types_1.toPinType(pin);
+            if (port_nr !== undefined && pin_nr !== undefined) {
+                if (val === 0) {
+                    sender_1.GPIO.clr_pin(port_nr, pin_nr);
+                }
+                else {
+                    sender_1.GPIO.set_pin(port_nr, pin_nr);
+                }
+            }
+        }
     });
     electron_1.ipcMain.on("message-to-main", function (ev, message) {
         var _a;
