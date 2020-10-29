@@ -41,6 +41,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var qemu_lpc4088_controller_1 = __importDefault(require("qemu-lpc4088-controller"));
 var MachineState_1 = __importDefault(require("./MachineState"));
+var QemuConnectorTypes_1 = require("../../common/QemuConnectorTypes");
 var QemuConnector = /** @class */ (function () {
     function QemuConnector() {
     }
@@ -98,6 +99,51 @@ var QemuConnector = /** @class */ (function () {
                         }
                     }
                     this.machineState.ioconState.PORTS[msg.port][msg.pin] = (msg.value & 0x7);
+                }
+            }
+            else if (msg.module === "TIMER") {
+                if (msg.event === "emr_change") {
+                    var new_emr = msg.value;
+                    var old_emr = this.machineState.timerState["EMR"];
+                    this.machineState.timerState["EMR"] = new_emr;
+                    if (QemuConnector.onMachineStateChangeHandler) {
+                        if (new_emr !== old_emr) {
+                            QemuConnector.onMachineStateChangeHandler({
+                                module: "TIMER",
+                                event: "emr_change",
+                                timer_nr: msg.timer_name,
+                                old_emr: old_emr,
+                                new_emr: new_emr,
+                            });
+                        }
+                    }
+                }
+                else if (msg.event === "reg_change") {
+                    var reg_name = QemuConnectorTypes_1.timerOffsetToRegName(msg.reg_offset);
+                    var new_reg = msg.value;
+                    var old_reg = this.machineState.timerState[reg_name];
+                    this.machineState.timerState[reg_name] = new_reg;
+                    if (QemuConnector.onMachineStateChangeHandler) {
+                        if (new_reg !== old_reg) {
+                            QemuConnector.onMachineStateChangeHandler({
+                                module: "TIMER",
+                                event: "reg_change",
+                                offset: msg.reg_offset,
+                                timer_nr: msg.timer_name,
+                                old_val: old_reg,
+                                new_val: new_reg,
+                            });
+                            if (reg_name === "EMR") {
+                                QemuConnector.onMachineStateChangeHandler({
+                                    module: "TIMER",
+                                    event: "emr_change",
+                                    timer_nr: msg.timer_name,
+                                    old_emr: old_reg,
+                                    new_emr: new_reg,
+                                });
+                            }
+                        }
+                    }
                 }
             }
         }

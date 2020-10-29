@@ -2,9 +2,9 @@ import electron, { ipcMain, app, BrowserWindow } from "electron";
 import url from 'url';
 import path from 'path';
 import { QemuProcessInterface } from "qemu-lpc4088-controller/dist/apprunner/qemu_runner";
-import { GPIO } from "qemu-lpc4088-controller/dist/sender";
+import { GPIO, TIMER } from "qemu-lpc4088-controller/dist/sender";
 import QemuConnector from "./src/electron-main/QemuConnector/QemuConnector";
-import { toPinType, toPortType } from "qemu-lpc4088-controller/dist/qemu_mq_types";
+import { toPinType, toPortType, toTimerType } from "qemu-lpc4088-controller/dist/qemu_mq_types";
 
 let mainWindow: BrowserWindow | null;
 let optionsWindow: BrowserWindow | null;
@@ -73,6 +73,18 @@ function createWindow() {
         }
     });
 
+
+    ipcMain.on('timer-capture', (ev, timer, pin, val) => {
+        if(_qemuInterface) {
+            // val = 1 sends a rising edge
+            // val = 0 sends a falling edge
+            const t_nr = toTimerType(timer);
+            if(t_nr !== undefined) {
+                TIMER.send_capture(t_nr, pin as (0 | 1), val === 1);
+            }
+        }
+    });
+
     ipcMain.on("message-to-main", (ev, message, ...args) => {
         if(mainWindow) mainWindow.webContents.send(message, ...args);
     });
@@ -92,7 +104,7 @@ function createWindow() {
                 });
                 _qemuInterface.run();
                 if(mainWindow !== null && QemuConnector.machineState) {
-                    mainWindow.webContents.send("iocon-state", QemuConnector.machineState.getIoconState);
+                    mainWindow.webContents.send("exec-started", QemuConnector.machineState.getIoconState);
                 }
                 if(optionsWindow !== null) {
                     optionsWindow.webContents.send("exec-started");

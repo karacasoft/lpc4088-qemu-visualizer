@@ -109,6 +109,16 @@ function createWindow() {
             }
         }
     });
+    electron_1.ipcMain.on('timer-capture', function (ev, timer, pin, val) {
+        if (_qemuInterface) {
+            // val = 1 sends a rising edge
+            // val = 0 sends a falling edge
+            var t_nr = qemu_mq_types_1.toTimerType(timer);
+            if (t_nr !== undefined) {
+                sender_1.TIMER.send_capture(t_nr, pin, val === 1);
+            }
+        }
+    });
     electron_1.ipcMain.on("message-to-main", function (ev, message) {
         var _a;
         var args = [];
@@ -141,7 +151,7 @@ function createWindow() {
                     });
                     _qemuInterface.run();
                     if (mainWindow !== null && QemuConnector_1.default.machineState) {
-                        mainWindow.webContents.send("iocon-state", QemuConnector_1.default.machineState.getIoconState);
+                        mainWindow.webContents.send("exec-started", QemuConnector_1.default.machineState.getIoconState);
                     }
                     if (optionsWindow !== null) {
                         optionsWindow.webContents.send("exec-started");

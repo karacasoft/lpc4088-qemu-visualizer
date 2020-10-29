@@ -114,7 +114,7 @@ interface Ruleset {
 }
 
 export type OnInputChangeListener = (port: number, pin: number, value: number) => void;
-export type OnTimerEMRChangeListener = (timer: number, emr_val: number) => void;
+export type OnTimerEMRChangeListener = (timer: number, old_val: number, emr_val: number) => void;
 
 
 export default class CircuitSimulator {
@@ -125,14 +125,10 @@ export default class CircuitSimulator {
     static timer3_emr: number = 0;
 
     private static _onInputChangeListener?: OnInputChangeListener;
-    private static _onTimerEMRChangeListener?: OnTimerEMRChangeListener;
+    static _onTimerEMRChangeListener?: OnTimerEMRChangeListener;
 
     public static set onInputChangeListener(l: OnInputChangeListener) {
         CircuitSimulator._onInputChangeListener = l;
-    }
-
-    public static set onTimerEMRChangeListener(l: OnTimerEMRChangeListener) {
-        CircuitSimulator._onTimerEMRChangeListener = l;
     }
 
     private static circuit_rules: { [r_name: string]: Ruleset } = {
@@ -317,7 +313,6 @@ export default class CircuitSimulator {
         // Process each chip pins
         for (let i = 0; i < chip_pins.length; i ++) {
             let links = chip_pins[i].getLinks();
-            if(Object.keys(links).length !== 0) console.log(links);
             for (let link of Object.values(links)) {
                 if (link.getSourcePort() !== null && link.getTargetPort() !== null) {
                     /*if ((link.getSourcePort().getNode() as PeripheralNodeModel).getName().substring(0, 3) === "LPC") {
@@ -331,6 +326,16 @@ export default class CircuitSimulator {
                 }
             }
         }
+
+        // Handle ultrasonic sensor connections
+        // TODO move this to a more generic construct later.
+        PeripheralNodeModel.all_peripherals.forEach(p => {
+            const per = p as PeripheralNodeModel;
+            if(per.PERIPHAREL_TYPE === Peripheral_Type.UltraSonic) {
+                const us = per as UltraSonicNodeModel;
+                us.register_listeners_if_chip_connected_correctly();
+            }
+        });
     }
 
     static removeUnconnectedLinks(model: DiagramModel) {

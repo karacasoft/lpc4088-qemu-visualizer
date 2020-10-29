@@ -18,6 +18,7 @@ import { LEDNodeFactory } from './CustomNodes/LEDNodeFactory';
 import { SimplePortFactory } from './CustomNodes/SimplePortFactory';
 import ChipNodeModel from './Nodes/ChipNodeModel';
 import PeripheralNodeModel from './Nodes/PeripheralNodeModel';
+import UltraSonicNodeModel from './Nodes/UltraSonicNodeModel';
 
 interface MyProps {
 }
@@ -83,6 +84,12 @@ function processMachineStateUpdate(state_update: MachineStateEventData) {
                 }
             }
             break;
+        case "TIMER":
+            if(state_update.event === "emr_change") {
+                if(CircuitSimulator._onTimerEMRChangeListener) {
+                    CircuitSimulator._onTimerEMRChangeListener(state_update.timer_nr, state_update.old_emr, state_update.new_emr);
+                }
+            }
         default:
             
             break;
@@ -137,8 +144,8 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
 
         
 
-        ipcRenderer.on('iocon-state', (ev, iocon) => {
-            console.log(iocon);
+        ipcRenderer.on('exec-started', (ev, iocon) => {
+            CircuitSimulator.initializeSimulation();
             CircuitSimulator.iocon_state = iocon as IOCONState;
         });
 
@@ -148,6 +155,10 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
             processMachineStateUpdate(m_state_change_ev);
 
             CircuitSimulator.startSimulation();
+        });
+
+        ipcRenderer.on('us-distance', (ev, val) => {
+            UltraSonicNodeModel.ObstacleDistance = val;
         });
 
         CircuitSimulator.onInputChangeListener = (port, pin, val) => {

@@ -1,4 +1,4 @@
-export type PinFunction = GPIOPinFunction | UARTPinFunction | undefined;
+export type PinFunction = GPIOPinFunction | UARTPinFunction | TIMERPinFunction | undefined;
 
 export interface GPIOPinFunction {
     module: "GPIO";
@@ -11,8 +11,19 @@ export interface UARTPinFunction {
     uart_name: number;
 }
 
+export interface TIMERPinFunction {
+    module: "TIMER";
+    timer_name: number;
+    type: "match" | "capture";
+    pin_nr: number;
+}
+
 function GPIO(port: number, pin: number): GPIOPinFunction {
     return { module: "GPIO", port, pin };
+}
+
+function TIMER(timer: number, type: "match" | "capture", pin: number): TIMERPinFunction {
+    return { module: "TIMER", timer_name: timer, type, pin_nr: pin};
 }
 
 export const IOCON_LOOKUP_TABLE: { [k: number]: PinFunction | undefined }[][] = [
@@ -26,7 +37,7 @@ export const IOCON_LOOKUP_TABLE: { [k: number]: PinFunction | undefined }[][] = 
         { 0: GPIO(0, 6) },
         { 0: GPIO(0, 7) },
         { 0: GPIO(0, 8) },
-        { 0: GPIO(0, 9) },
+        { 0: GPIO(0, 9), 3: TIMER(2, "match", 3), },
         { 0: GPIO(0, 10) },
         { 0: GPIO(0, 11) },
         { 0: GPIO(0, 12) },
@@ -41,7 +52,7 @@ export const IOCON_LOOKUP_TABLE: { [k: number]: PinFunction | undefined }[][] = 
         { 0: GPIO(0, 21) },
         { 0: GPIO(0, 22) },
         { 0: GPIO(0, 23) },
-        { 0: GPIO(0, 24) },
+        { 0: GPIO(0, 24), 3: TIMER(3, "capture", 1), },
         { 0: GPIO(0, 25) },
         { 0: GPIO(0, 26) },
         { 0: GPIO(0, 27) },

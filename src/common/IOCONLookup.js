@@ -4,6 +4,9 @@ exports.IOCON_LOOKUP_TABLE = void 0;
 function GPIO(port, pin) {
     return { module: "GPIO", port: port, pin: pin };
 }
+function TIMER(timer, type, pin) {
+    return { module: "TIMER", timer_name: timer, type: type, pin_nr: pin };
+}
 exports.IOCON_LOOKUP_TABLE = [
     [
         { 0: GPIO(0, 0) },
@@ -15,7 +18,7 @@ exports.IOCON_LOOKUP_TABLE = [
         { 0: GPIO(0, 6) },
         { 0: GPIO(0, 7) },
         { 0: GPIO(0, 8) },
-        { 0: GPIO(0, 9) },
+        { 0: GPIO(0, 9), 3: TIMER(2, "match", 3), },
         { 0: GPIO(0, 10) },
         { 0: GPIO(0, 11) },
         { 0: GPIO(0, 12) },
@@ -30,7 +33,7 @@ exports.IOCON_LOOKUP_TABLE = [
         { 0: GPIO(0, 21) },
         { 0: GPIO(0, 22) },
         { 0: GPIO(0, 23) },
-        { 0: GPIO(0, 24) },
+        { 0: GPIO(0, 24), 3: TIMER(3, "capture", 1), },
         { 0: GPIO(0, 25) },
         { 0: GPIO(0, 26) },
         { 0: GPIO(0, 27) },

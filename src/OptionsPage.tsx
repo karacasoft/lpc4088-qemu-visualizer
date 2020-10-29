@@ -94,7 +94,6 @@ function OptionsPage() {
                         }}
                         onClickExecute={() => {
                             if(!isRunning) {
-                                CircuitSimulator.initializeSimulation();
                                 ipcRenderer.send('start-exec');
                             } else {
                                 ipcRenderer.send('stop-exec');
@@ -104,7 +103,10 @@ function OptionsPage() {
                     /> :
                 currentTab === 1 ?
                     <UltrasonicSensor value={objectDistance}
-                            onValueChange={(new_val) => setObjectDistance(new_val)} /> :
+                            onValueChange={(new_val) => {
+                                setObjectDistance(new_val);
+                                ipcRenderer.send('message-to-main', 'us-distance', new_val);
+                            }} /> :
                 currentTab === 2 ?
                     <LDR value={lightIntensity}
                         onValueChange={(new_val) => setLightIntensity(new_val)} /> :
