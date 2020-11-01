@@ -5,7 +5,7 @@ import { GenerateWidgetEvent, GenerateModelEvent } from '@projectstorm/react-can
 import LEDNodeModel from '../Nodes/LEDNodeModel';
 import LEDNodeWidget from './LEDNodeWidget';
 
-export class LEDNodeFactory extends AbstractReactFactory<LEDNodeModel, DiagramEngine> {
+export default class LEDNodeFactory extends AbstractReactFactory<LEDNodeModel, DiagramEngine> {
     constructor() {
         super('led');
     }

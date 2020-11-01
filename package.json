@@ -88,8 +88,8 @@
     "start": "node scripts/start.js",
     "electron:build": "tsc -p tsconfig.electron.json",
     "electron": "npm run electron:build && electron .",
-    "electron-dev": "node ./electron-dev-start.js",
-    "electron-pack": "npm run electron:build && npm run build && electron-packager . \"LPC4088 Visualizer\" --platform=linux --arch=x64 --out=./package",
+    "electron-dev": "NODE_ENV=development node ./electron-dev-start.js",
+    "electron-pack": "NODE_ENV=production npm run electron:build && npm run build && electron-packager . \"LPC4088 Visualizer\" --platform=linux --arch=x64 --out=./package",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js"
   },

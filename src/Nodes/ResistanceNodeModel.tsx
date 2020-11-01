@@ -11,20 +11,8 @@ export default class ResistanceNodeModel extends PeripheralNodeModel {
         this.addInPort("<=");
         this.addOutPort("=>");
         this.setPosition(x, y);
-        if (locked === true) {
-            this.setLocked();
-            this.registerListener(
-                {
-                    selectionChanged: () => {
-                        if (this.isSelected()) {
-                            let node = new ResistanceNodeModel(false, x, y + 400, model, resistance)
-                            model.addNode(node);
-                            PeripheralNodeModel.all_peripherals.push(node);
-                        }
-                    }
-                }
-            );
-        }
+        this.setLocked(locked);
+        PeripheralNodeModel.all_peripherals.push(this);
         this.PERIPHAREL_TYPE = Peripheral_Type.Resistance;
         this.resistance = resistance;
     }

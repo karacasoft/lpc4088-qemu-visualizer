@@ -11,8 +11,10 @@ import ResistanceNodeModel from './Nodes/ResistanceNodeModel';
 import UltraSonicNodeModel from './Nodes/UltraSonicNodeModel';
 import VoltageNodeModel from './Nodes/VoltageNodeModel';
 
-type CircuitNodeRule = ChipNodeRule | LEDNodeRule | LogicalCombinationRule
-    | ZeroOrMoreRule | ResistanceNodeRule | LDRNodeRule | VoltageNodeRule | GroundNodeRule;
+type CircuitNodeRule = ChipNodeRule | LEDNodeRule | LogicalCombinationRule |
+    ZeroOrMoreRule | ResistanceNodeRule | LDRNodeRule | SwitchNodeRule |
+    JoystickNodeRule |
+    VoltageNodeRule | GroundNodeRule;
 
 interface ZeroOrMoreRule {
     peripheral: "zeroormore";
@@ -46,6 +48,14 @@ interface ResistanceNodeRule {
 
 interface LDRNodeRule {
     peripheral: "ldr";
+}
+
+interface SwitchNodeRule {
+    peripheral: "switch";
+}
+
+interface JoystickNodeRule {
+    peripheral: "joystick";
 }
 
 interface VoltageNodeRule {
@@ -108,6 +118,10 @@ function voltage(): VoltageNodeRule { return { peripheral: "voltage" }; }
 
 function ground(): GroundNodeRule { return { peripheral: "ground" }; }
 
+function _switch(): SwitchNodeRule { return { peripheral: "switch" }; }
+
+function joystick(): JoystickNodeRule { return { peripheral: "joystick"}; }
+
 interface Ruleset {
     rules: CircuitNodeRule[];
     simulate?: (ruleset_name: string, node_chain: PeripheralNodeModel[], port_chain: PortModel[]) => void;
@@ -133,6 +147,16 @@ export default class CircuitSimulator {
 
     private static circuit_rules: { [r_name: string]: Ruleset } = {
         // names of the rulesets are being used for simulation. Do not change...
+        "switch": {
+            rules: [
+                chip({ pin_dir: "input", pin_func: "GPIO" }),
+                zeroOrMore(or([resistance(), ldr()])),
+                or([_switch(), joystick()]),
+                zeroOrMore(or([resistance(), ldr()])),
+                or([voltage(), ground()]),
+            ],
+            simulate: CircuitSimulator.simulateSwitch,
+        },
         "led1": {
             rules: [
                 chip({ pin_dir: "output", pin_func: "GPIO" }),
@@ -160,7 +184,7 @@ export default class CircuitSimulator {
                 or([voltage(), ground()]),
             ],
             simulate: CircuitSimulator.simulateInput,
-        }
+        },
     };
 
     
@@ -216,6 +240,10 @@ export default class CircuitSimulator {
             && CircuitSimulator._onInputChangeListener(port_nr, pin_nr, chip.pin_voltages[pin_nr]);
     }
 
+    static simulateSwitch(ruleset_name: string, node_chain: PeripheralNodeModel[], port_chain: PortModel[]) {
+        CircuitSimulator.simulateInput(ruleset_name, node_chain, port_chain);
+    }
+
     static applyRule(rule: CircuitNodeRule, port: PortModel, node?: PeripheralNodeModel): boolean {
         if (node === undefined) {
             node = port.getNode() as PeripheralNodeModel;
@@ -253,6 +281,12 @@ export default class CircuitSimulator {
                 } else if(rule.direction === "-+" && !led_node.direction) {
                     return false;
                 }
+                return true;
+            case "switch":
+                if(node.PERIPHAREL_TYPE !== Peripheral_Type.Switch) return false;
+                return true;
+            case "joystick":
+                if(node.PERIPHAREL_TYPE !== Peripheral_Type.Joystick) return false;
                 return true;
             case "ground":
                 if(node.PERIPHAREL_TYPE !== Peripheral_Type.Ground) return false;

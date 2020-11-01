@@ -3,10 +3,18 @@ import { ipcRenderer } from 'electron';
 import React, { useState } from 'react';
 import CircuitSimulator from './CircuitSimulator';
 import ExecutableFileSelector from './OptionsPages/ExecutableFileSelector';
-import Joystick from './OptionsPages/Joystick';
+import Joystick from './CustomNodes/Joystick';
 import LDR from './OptionsPages/LDR';
 import UARTCommunication from './OptionsPages/UARTCommunication';
 import UltrasonicSensor from './OptionsPages/UltrasonicSensor';
+
+interface JoyButtons {
+    up: boolean;
+    down: boolean;
+    left: boolean;
+    right: boolean;
+    center: boolean;
+}
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -58,7 +66,14 @@ function OptionsPage() {
     // TAB 2
     const [lightIntensity, setLightIntensity] = useState(20);
 
-    // TAB 3
+    // TAB 3 Joystick
+    const [joy_buttons, setJoyButtons] = useState<JoyButtons>({
+        up: false,
+        down: false,
+        left: false,
+        right: false,
+        center: false,
+    });
 
 
     // TAB 4
@@ -77,7 +92,6 @@ function OptionsPage() {
                 <Tab label="Executable file" />
                 <Tab label="Ultrasonic Sensor" />
                 <Tab label="LDR" />
-                <Tab label="Joystick" />
                 <Tab label="UART Communication" />
             </Tabs>
         </AppBar>
@@ -111,9 +125,6 @@ function OptionsPage() {
                     <LDR value={lightIntensity}
                         onValueChange={(new_val) => setLightIntensity(new_val)} /> :
                 currentTab === 3 ?
-                    <Joystick onPressButton={(b) => {}}
-                            onReleaseButton={(b) => {}} /> :
-                currentTab === 4 ?
                     <UARTCommunication messages={messages}
                             selectedUART={selectedUART}
                             onSendMessage={(msg) => {}}

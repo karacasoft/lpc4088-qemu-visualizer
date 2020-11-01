@@ -52,7 +52,6 @@ function LPC4088VisualizerAppBar({ onMenuIconClicked, onOptionsClicked, onExport
                     onClose={() => setAnchorEl(null)}>
                 <MenuItem onClick={() => { onExportCircuitClicked(); setAnchorEl(null); }}>Export Circuit</MenuItem>
                 <MenuItem onClick={() => { onImportCircuitClicked(); setAnchorEl(null); }}>Import Circuit</MenuItem>
-                <MenuItem onClick={() => { onOptionsClicked(); setAnchorEl(null); }}>Settings</MenuItem>
             </Menu>
                 
           </Toolbar>

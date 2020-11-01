@@ -14,7 +14,9 @@ import React from 'react';
 import { MachineStateEventData, IOCONState } from './common/QemuConnectorTypes';
 import { IOCON_LOOKUP_TABLE } from './common/IOCONLookup';
 import CircuitSimulator from './CircuitSimulator';
-import { LEDNodeFactory } from './CustomNodes/LEDNodeFactory';
+import LEDNodeFactory from './CustomNodes/LEDNodeFactory';
+import SwitchNodeFactory from './CustomNodes/SwitchNodeFactory';
+import JoystickNodeFactory from './CustomNodes/JoystickNodeFactory';
 import { SimplePortFactory } from './CustomNodes/SimplePortFactory';
 import ChipNodeModel from './Nodes/ChipNodeModel';
 import PeripheralNodeModel from './Nodes/PeripheralNodeModel';
@@ -33,11 +35,20 @@ interface MyState {
 }
 
 let model = new DiagramModel();
-let engine: DiagramEngine = createEngine({ registerDefaultZoomCanvasAction: false });
+let engine: DiagramEngine = createEngine();
 engine.getPortFactories().registerFactory(
     new SimplePortFactory('led', (config) => new DefaultPortModel(config))
 );
-engine.getNodeFactories().registerFactory(new LEDNodeFactory()); 
+engine.getPortFactories().registerFactory(
+    new SimplePortFactory('switch', (config) => new DefaultPortModel(config))
+);
+engine.getPortFactories().registerFactory(
+    new SimplePortFactory('joystick', (config) => new DefaultPortModel(config))
+);
+
+engine.getNodeFactories().registerFactory(new LEDNodeFactory());
+engine.getNodeFactories().registerFactory(new SwitchNodeFactory());
+engine.getNodeFactories().registerFactory(new JoystickNodeFactory());
 
 export function getModel() { return model; }
 export function getEngine() { return engine; }
@@ -116,8 +127,7 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
         CircuitSimulator.initializeSimulation();
         let prev_height = 100;
         for(let i = 0; i < 5; i++) {
-            const port = new ChipNodeModel(true, 600, prev_height, model, i);
-            prev_height += 550;
+            const port = new ChipNodeModel(true, 600 + 100 * i, prev_height, model, i);
             model.addNode(port);
         }
         
@@ -164,7 +174,6 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
         CircuitSimulator.onInputChangeListener = (port, pin, val) => {
             if(CircuitSimulator.iocon_state) {
                 const iocon_func = CircuitSimulator.iocon_state.PORTS[port][pin];
-                console.log(iocon_func);
                 if((IOCON_LOOKUP_TABLE[port][pin][iocon_func]?.module === "GPIO")) {
                     
                     ipcRenderer.send("gpio-pin-change", port, pin, (val > 2.0) ? 1 : 0);

@@ -72,8 +72,8 @@ function createWindow() {
         protocol: "file:",
         slashes: true,
     });
+    mainWindow.setMenu(null);
     mainWindow.loadURL(startURL);
-    mainWindow.webContents.openDevTools();
     mainWindow.on('closed', function () {
         mainWindow = null;
         if (optionsWindow !== null) {
@@ -90,8 +90,13 @@ function createWindow() {
         },
     });
     var startURLOptions = startURL + "?options=true";
+    optionsWindow.setMenu(null);
     optionsWindow.loadURL(startURLOptions);
-    optionsWindow.webContents.openDevTools();
+    console.log(process.env.NODE_ENV);
+    if (process.env.NODE_ENV === "development") {
+        mainWindow.webContents.openDevTools();
+        optionsWindow.webContents.openDevTools();
+    }
     optionsWindow.on('closed', function () {
         optionsWindow = null;
     });
@@ -179,6 +184,15 @@ function createWindow() {
             return [2 /*return*/];
         });
     }); });
+    electron_1.app.on('before-quit', function () {
+        if (_qemuInterface !== null) {
+            _qemuInterface.kill();
+            _qemuInterface = null;
+            if (optionsWindow !== null) {
+                optionsWindow.webContents.send("exec-stopped");
+            }
+        }
+    });
 }
 electron_1.app.on('ready', createWindow);
 electron_1.app.on('window-all-closed', function () {

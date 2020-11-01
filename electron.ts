@@ -29,9 +29,10 @@ function createWindow() {
         protocol: "file:",
         slashes: true,
     });
+    mainWindow.setMenu(null);
     mainWindow.loadURL(startURL);
 
-    mainWindow.webContents.openDevTools();
+    
 
     mainWindow.on('closed', () => {
         mainWindow = null;
@@ -51,9 +52,14 @@ function createWindow() {
     });
 
     let startURLOptions = startURL + "?options=true";
+    optionsWindow.setMenu(null);
     optionsWindow.loadURL(startURLOptions);
 
-    optionsWindow.webContents.openDevTools();
+    console.log(process.env.NODE_ENV);
+    if(process.env.NODE_ENV === "development") {
+        mainWindow.webContents.openDevTools();
+        optionsWindow.webContents.openDevTools();
+    }
 
     optionsWindow.on('closed', () => {
         optionsWindow = null;
@@ -119,6 +125,16 @@ function createWindow() {
     });
 
     ipcMain.on('stop-exec', async (ev) => {
+        if(_qemuInterface !== null) {
+            _qemuInterface.kill();
+            _qemuInterface = null;
+            if(optionsWindow !== null) {
+                optionsWindow.webContents.send("exec-stopped");
+            }
+        }
+    });
+
+    app.on('before-quit', () => {
         if(_qemuInterface !== null) {
             _qemuInterface.kill();
             _qemuInterface = null;

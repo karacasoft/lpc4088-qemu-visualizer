@@ -12,7 +12,8 @@ export enum Peripheral_Type {
     Switch,
     LDR,
     VoltagePot,
-    Hand
+    Hand,
+    Joystick,
 }
 
 export default class PeripheralNodeModel extends DefaultNodeModel {

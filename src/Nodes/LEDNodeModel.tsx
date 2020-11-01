@@ -21,6 +21,7 @@ export default class LEDNodeModel extends PeripheralNodeModel {
         this.setPosition(x, y);
         this.setLocked(locked);
         this.PERIPHAREL_TYPE = Peripheral_Type.LED;
+        PeripheralNodeModel.all_peripherals.push(this);
         this.colour = colour;
         this.direction = direction;
     }

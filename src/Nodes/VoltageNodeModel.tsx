@@ -11,20 +11,8 @@ export default class VoltageNodeModel extends PeripheralNodeModel {
         this.addInPort("<=");
         this.addOutPort("=>");
         this.setPosition(x, y);
-        if (locked === true) {
-            this.setLocked();
-            this.registerListener(
-                {
-                    selectionChanged: () => {
-                        if (this.isSelected()) {
-                            let node = new VoltageNodeModel(false, x, y + 400, model, voltage);
-                            model.addNode(node);
-                            PeripheralNodeModel.all_peripherals.push(node);
-                        }
-                    }
-                }
-            );
-        }
+        this.setLocked(locked);
+        PeripheralNodeModel.all_peripherals.push(this);
         this.PERIPHAREL_TYPE = Peripheral_Type.Voltage;
         this.voltage = voltage;
     }

@@ -34,11 +34,12 @@ export default class LEDNodeWidget extends React.Component<LEDNodeWidgetProps, L
     generatePort(isInPort: boolean) {
         return (port: DefaultPortModel) => {
             return <PortWidget
+                key={port.getName()}
                 port={port}
                 engine={this.props.engine}
                 style={{
                     position: "absolute",
-                    left: isInPort ? -8 : 40,
+                    left: isInPort ? -8 : 88,
                     top: 48,
                 }}
                 >
@@ -63,7 +64,7 @@ export default class LEDNodeWidget extends React.Component<LEDNodeWidgetProps, L
                 padding: 0,
                 paddingBottom: 8,
                 display: "flex",
-                width: 44,
+                width: 92,
                 borderStyle: "solid",
                 borderRadius: 8,
                 borderWidth: 2,
