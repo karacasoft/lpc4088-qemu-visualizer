@@ -1,7 +1,8 @@
 import { DefaultPortModel, DiagramEngine, PortWidget } from '@projectstorm/react-diagrams';
 import React from 'react';
+import CircuitSimulator from '../CircuitSimulator';
 import JoystickNodeModel from '../Nodes/JoystickNodeModel';
-import Joystick from './Joystick';
+import Joystick, { ButtonDirection } from './Joystick';
 
 interface JoystickNodeWidgetProps {
     node: JoystickNodeModel;
@@ -17,6 +18,9 @@ export default class JoystickNodeWidget extends React.Component<JoystickNodeWidg
         super(props);
         this.generateCommonPort = this.generateCommonPort.bind(this);
         this.generateOutPort = this.generateOutPort.bind(this);
+
+        this.onJoystickPressButton = this.onJoystickPressButton.bind(this);
+        this.onJoystickReleaseButton = this.onJoystickReleaseButton.bind(this);
     }
 
     generateOutPort(port: DefaultPortModel, idx: number) {
@@ -68,6 +72,50 @@ export default class JoystickNodeWidget extends React.Component<JoystickNodeWidg
         </PortWidget>
     }
 
+    onJoystickPressButton(which: ButtonDirection) {
+        const { node } = this.props;
+        switch(which) {
+            case "up":
+                node.up_pressed = true;
+                break;
+            case "down":
+                node.down_pressed = true;
+                break;
+            case "left":
+                node.left_pressed = true;
+                break;
+            case "right":
+                node.right_pressed = true;
+                break;
+            case "center":
+                node.center_pressed = true;
+                break;
+        }
+        CircuitSimulator.startSimulation();
+    }
+
+    onJoystickReleaseButton(which: ButtonDirection) {
+        const { node } = this.props;
+        switch(which) {
+            case "up":
+                node.up_pressed = false;
+                break;
+            case "down":
+                node.down_pressed = false;
+                break;
+            case "left":
+                node.left_pressed = false;
+                break;
+            case "right":
+                node.right_pressed = false;
+                break;
+            case "center":
+                node.center_pressed = false;
+                break;
+        }
+        CircuitSimulator.startSimulation();
+    }
+
     render() {
         const { node } = this.props;
         if(node.getInPorts().length !== 1) {
@@ -86,8 +134,8 @@ export default class JoystickNodeWidget extends React.Component<JoystickNodeWidg
                 borderColor: node.isSelected() ? "#8080FF" : "#333",
                 backgroundColor: "#DDDDDD",
             }}>
-                <Joystick onPressButton={(which) => {}}
-                        onReleaseButton={(which) => {}} />
+                <Joystick onPressButton={this.onJoystickPressButton}
+                        onReleaseButton={this.onJoystickReleaseButton} />
                 {this.generateCommonPort(common_in_port)}
                 {node.getOutPorts().map(this.generateOutPort)}
             </div>
