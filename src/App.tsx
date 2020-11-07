@@ -1,21 +1,17 @@
-
-import { IconButton, makeStyles, Snackbar } from '@material-ui/core';
-import Close from '@material-ui/icons/Close';
-import React, { useState } from 'react';
-//import logo from './logo.svg';
+import React from 'react';
 import './App.css';
-import LPC4088VisualizerAppBar from './AppBar';
-import CircuitDisplay, { getEngine, getModel } from './Diagram';
-import LPC4088VisualizerDrawer from './Drawer';
 import MainPage from './MainPage';
 import OptionsPage from './OptionsPage';
+import AppConfig from './app.config';
+
+const enable_circuit_checker = AppConfig.enable_circuit_checker;
 
 function App() {
   if(window.location.href.endsWith("?options=true")) {
     return <OptionsPage />;
   } else {
     return (
-      <MainPage />
+      <MainPage enable_circuit_checker={enable_circuit_checker} />
     );
   }
 }

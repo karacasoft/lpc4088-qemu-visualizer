@@ -1,4 +1,4 @@
-import { DiagramModel } from '@projectstorm/react-diagrams';
+import { DeserializeEvent } from '@projectstorm/react-canvas-core';
 import PeripheralNodeModel, { Peripheral_Type } from './PeripheralNodeModel';
 import LEDPortModel from '../Ports/LEDPortModel';
 
@@ -24,6 +24,19 @@ export default class LEDNodeModel extends PeripheralNodeModel {
         PeripheralNodeModel.all_peripherals.push(this);
         this.colour = colour;
         this.direction = direction;
+    }
+
+    serialize() {
+        const serialized = super.serialize();
+        serialized["direction"] = this.direction;
+        serialized["colour"] = this.colour;
+        return serialized;
+    }
+
+    deserialize(ev: DeserializeEvent<this>) {
+        super.deserialize(ev);
+        this.direction = ev.data["direction"];
+        this.colour = ev.data["colour"];
     }
 
     addInPort(label: string): LEDPortModel {

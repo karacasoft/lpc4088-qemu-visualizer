@@ -7,7 +7,7 @@ export default class ResistanceNodeModel extends PeripheralNodeModel {
     resistance = 0;
 
     constructor(locked: boolean, x: number, y: number, model: DiagramModel, resistance: number) {
-        super({ name: resistance + " Ω", color: "rgb(64, 64, 64)" });
+        super({ name: resistance + " Ω", color: "rgb(64, 64, 64)", type: "peripheral"  });
         this.addInPort("<=");
         this.addOutPort("=>");
         this.setPosition(x, y);

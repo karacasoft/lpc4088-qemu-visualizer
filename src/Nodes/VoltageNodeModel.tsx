@@ -7,7 +7,7 @@ export default class VoltageNodeModel extends PeripheralNodeModel {
     voltage = 0;
 
     constructor(locked: boolean, x: number, y: number, model: DiagramModel, voltage: number) {
-        super({ name: voltage + "V Voltage", color: "rgb(192, 0, 0)" });
+        super({ name: voltage + "V Voltage", color: "rgb(192, 0, 0)", type: "peripheral"  });
         this.addInPort("<=");
         this.addOutPort("=>");
         this.setPosition(x, y);

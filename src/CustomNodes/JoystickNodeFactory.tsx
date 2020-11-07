@@ -5,7 +5,7 @@ import { GenerateWidgetEvent, GenerateModelEvent } from '@projectstorm/react-can
 import JoystickNodeModel from '../Nodes/JoystickNodeModel';
 import JoystickNodeWidget from './JoystickNodeWidget';
 
-export default class SwitchNodeFactory extends AbstractReactFactory<JoystickNodeModel, DiagramEngine> {
+export default class JoystickNodeFactory extends AbstractReactFactory<JoystickNodeModel, DiagramEngine> {
     constructor() {
         super('joystick');
     }

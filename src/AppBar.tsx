@@ -24,9 +24,14 @@ interface LPC4088VisualizerAppBarProps {
     onOptionsClicked: () => void;
     onExportCircuitClicked: () => void;
     onImportCircuitClicked: () => void;
+
+    additionalMenuOptions: string[];
+    onAdditionalMenuOptionClicked: (opt: string) => void;
 };
 
-function LPC4088VisualizerAppBar({ onMenuIconClicked, onOptionsClicked, onExportCircuitClicked, onImportCircuitClicked }: LPC4088VisualizerAppBarProps) {
+function LPC4088VisualizerAppBar({ onMenuIconClicked, onOptionsClicked, onExportCircuitClicked,
+      onImportCircuitClicked, additionalMenuOptions,
+      onAdditionalMenuOptionClicked }: LPC4088VisualizerAppBarProps) {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const classes = useStyles();
 
@@ -52,6 +57,12 @@ function LPC4088VisualizerAppBar({ onMenuIconClicked, onOptionsClicked, onExport
                     onClose={() => setAnchorEl(null)}>
                 <MenuItem onClick={() => { onExportCircuitClicked(); setAnchorEl(null); }}>Export Circuit</MenuItem>
                 <MenuItem onClick={() => { onImportCircuitClicked(); setAnchorEl(null); }}>Import Circuit</MenuItem>
+                {
+                  additionalMenuOptions.map((opt, idx) => (<MenuItem key={idx} onClick={() => {
+                    onAdditionalMenuOptionClicked(opt);
+                    setAnchorEl(null);
+                  }}>{opt}</MenuItem>))
+                }
             </Menu>
                 
           </Toolbar>

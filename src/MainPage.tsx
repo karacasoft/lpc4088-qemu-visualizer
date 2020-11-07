@@ -1,5 +1,5 @@
 
-import { IconButton, makeStyles, Snackbar } from '@material-ui/core';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, makeStyles, Snackbar } from '@material-ui/core';
 import Close from '@material-ui/icons/Close';
 import React, { useState } from 'react';
 //import logo from './logo.svg';
@@ -9,7 +9,6 @@ import CircuitDisplay, { getEngine, getModel } from './Diagram';
 import LPC4088VisualizerDrawer from './Drawer';
 import { loadModelFromFile } from './ElectronUtil/loadModel';
 import { showSaveDialog } from './ElectronUtil/saveFileDialog';
-import { QemuProcessInterface } from 'qemu-lpc4088-controller/dist/apprunner/qemu_runner';
 import GroundNodeModel from './Nodes/GroundNodeModel';
 import VoltageNodeModel from './Nodes/VoltageNodeModel';
 import ResistanceNodeModel from './Nodes/ResistanceNodeModel';
@@ -18,6 +17,8 @@ import LDRNodeModel from './Nodes/LDRNodeModel';
 import UltraSonicNodeModel from './Nodes/UltraSonicNodeModel';
 import SwitchNodeModel from './Nodes/SwitchNodeModel';
 import JoystickNodeModel from './Nodes/JoystickNodeModel';
+import CircuitChecker from './CircuitChecker/CircuitChecker';
+import PeripheralNodeModel from './Nodes/PeripheralNodeModel';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -84,23 +85,27 @@ function addItem(id: string) {
   }
 }
 
-let qemuInterface: QemuProcessInterface | null;
+interface MainPageProps {
+  enable_circuit_checker: boolean;
+}
 
-function MainPage() {
+function MainPage({ enable_circuit_checker }: MainPageProps) {
   const [snackbarText, setSnackbarText] = useState<null | string>(null);
   const [exeFile, setExeFile] = useState<null | string>(null);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [circuitCheckerOpen, setCircuitCheckerOpen] = useState(false);
 
   const classes = useStyles(); 
+
+  const additionalMenuOptions = [];
+  if(enable_circuit_checker) additionalMenuOptions.push("Circuit Checker");
+
   return (
     <div className={classes.root}>
       <LPC4088VisualizerAppBar
         onMenuIconClicked={() => setDrawerOpen(true)}
-        onOptionsClicked={() => {
-          setSettingsOpen(true);
-        }}
+        onOptionsClicked={() => {}}
         onExportCircuitClicked={() => {
           showSaveDialog(JSON.stringify(getModel().serialize()), () => {
             setSnackbarText("Exported Successfully");
@@ -108,9 +113,15 @@ function MainPage() {
         }}
         onImportCircuitClicked={() => {
           loadModelFromFile((data: string) => {
+            PeripheralNodeModel.chips = [];
+            PeripheralNodeModel.all_peripherals = [];
             getModel().deserializeModel(JSON.parse(data), getEngine());
             setSnackbarText("Imported Successfully");
           });
+        }}
+        additionalMenuOptions={additionalMenuOptions}
+        onAdditionalMenuOptionClicked={(opt) => {
+          if(opt === "Circuit Checker") setCircuitCheckerOpen(true);
         }}
       />
       <CircuitDisplay />
@@ -144,6 +155,18 @@ function MainPage() {
           </React.Fragment>
         }
         />
+      <Dialog
+        open={circuitCheckerOpen}>
+          <DialogTitle>Circuit Checker</DialogTitle>
+          <DialogContent>
+            <CircuitChecker />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setCircuitCheckerOpen(false)}>
+              Close
+            </Button>
+          </DialogActions>
+      </Dialog>
     </div>
   );
 }

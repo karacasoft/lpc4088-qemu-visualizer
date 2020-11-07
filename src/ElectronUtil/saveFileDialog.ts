@@ -14,7 +14,7 @@ export function showSaveDialog(file_contents: string, callback: () => void) {
         title: "Save Circuit",
         buttonLabel: "Save Circuit",
         filters: [
-            { name: "LPC4088 Visualizer Circuit File", extensions: [".lpc-vcf"] },
+            { name: "LPC4088 Visualizer Circuit File", extensions: ["lpc-vcf"] },
             { name: "All Files", extensions: [ "*" ] },
         ],
     };

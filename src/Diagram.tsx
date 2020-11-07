@@ -17,6 +17,8 @@ import CircuitSimulator from './CircuitSimulator';
 import LEDNodeFactory from './CustomNodes/LEDNodeFactory';
 import SwitchNodeFactory from './CustomNodes/SwitchNodeFactory';
 import JoystickNodeFactory from './CustomNodes/JoystickNodeFactory';
+import ChipNodeFactory from './CustomNodes/ChipNodeFactory';
+import PeripheralNodeFactory from './CustomNodes/PeripheralNodeFactory';
 import { SimplePortFactory } from './CustomNodes/SimplePortFactory';
 import ChipNodeModel from './Nodes/ChipNodeModel';
 import PeripheralNodeModel from './Nodes/PeripheralNodeModel';
@@ -46,9 +48,11 @@ engine.getPortFactories().registerFactory(
     new SimplePortFactory('joystick', (config) => new DefaultPortModel(config))
 );
 
+engine.getNodeFactories().registerFactory(new PeripheralNodeFactory());
 engine.getNodeFactories().registerFactory(new LEDNodeFactory());
 engine.getNodeFactories().registerFactory(new SwitchNodeFactory());
 engine.getNodeFactories().registerFactory(new JoystickNodeFactory());
+engine.getNodeFactories().registerFactory(new ChipNodeFactory());
 
 export function getModel() { return model; }
 export function getEngine() { return engine; }
@@ -127,7 +131,7 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
         CircuitSimulator.initializeSimulation();
         let prev_height = 100;
         for(let i = 0; i < 5; i++) {
-            const port = new ChipNodeModel(true, 600 + 100 * i, prev_height, model, i);
+            const port = new ChipNodeModel(true, 600 + 300 * i, prev_height, i);
             model.addNode(port);
         }
         

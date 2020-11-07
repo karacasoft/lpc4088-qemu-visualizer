@@ -42,9 +42,6 @@ export default class PeripheralNodeModel extends DefaultNodeModel {
     deserialize(ev: DeserializeEvent<this>) {
         super.deserialize(ev);
         this.PERIPHAREL_TYPE = ev.data["PERIPHAREL_TYPE"];
-        if(ev.data["PERIPHAREL_TYPE"] !== Peripheral_Type.Chip) {
-            PeripheralNodeModel.all_peripherals.push(this);
-        }
     }
 
     updateColour (colour: string) {

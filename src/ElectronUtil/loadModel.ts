@@ -11,10 +11,11 @@ export function loadModelFromFile(callback: (contents: string) => void) {
         title: "Load Circuit",
         buttonLabel: "Load Circuit",
         properties: [
-            "openFile"
+            "openFile",
+            "multiSelections",
         ],
         filters: [
-            { name: "LPC4088 Visualizer Circuit File", extensions: [".lpc-vcf"] },
+            { name: "LPC4088 Visualizer Circuit File", extensions: ["lpc-vcf"] },
             { name: "All Files", extensions: [ "*" ] },
         ],
     };

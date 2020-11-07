@@ -15,8 +15,8 @@ export default class ChipNodeModel extends PeripheralNodeModel {
 
     lpc_4088_port: number;
 
-    constructor(locked: boolean, x: number, y: number, model: DiagramModel, part: number) {
-        super({ name: "LPC4088 Port " + part, color: "rgb(255, 0, 64)" });
+    constructor(locked: boolean, x: number, y: number, part: number) {
+        super({ name: "LPC4088 Port " + part, color: "rgb(255, 0, 64)", type: "chip" });
         this.lpc_4088_port = part;
         this.setPosition(x, y);
         for (let i = 0; i <= 31; i ++) { 
@@ -27,9 +27,15 @@ export default class ChipNodeModel extends PeripheralNodeModel {
         this.PERIPHAREL_TYPE = Peripheral_Type.Chip;
     }
 
+    serialize() {
+        const serialized = super.serialize();
+        serialized["lpc_4088_port"] = this.lpc_4088_port;
+        return serialized;
+    }
+
     deserialize(ev: DeserializeEvent<this>) {
         super.deserialize(ev);
-        PeripheralNodeModel.chips.push(this);
+        this.lpc_4088_port = ev.data["lpc_4088_port"];
     }
 
     addInPort(label: string): ChipPortModel {

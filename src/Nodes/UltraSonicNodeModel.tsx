@@ -138,7 +138,7 @@ export default class UltraSonicNodeModel extends PeripheralNodeModel {
     }
 
     constructor(locked: boolean, x: number, y: number, model: DiagramModel) {
-        super({ name: "UltraSonic", color: "rgb(64, 128, 255)" });
+        super({ name: "UltraSonic", color: "rgb(64, 128, 255)", type: "peripheral"  });
         this.addOutPort("Vcc");
         this.addOutPort("Trig");
         this.addOutPort("Echo");

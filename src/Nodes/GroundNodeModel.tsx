@@ -5,7 +5,7 @@ import GroundPortModel from '../Ports/GroundPortModel';
 export default class GroundNodeModel extends PeripheralNodeModel {
 
     constructor(locked: boolean, x: number, y: number, model: DiagramModel) {
-        super({ name: "Ground", color: "rgb(128, 128, 128)" });
+        super({ name: "Ground", color: "rgb(128, 128, 128)", type: "peripheral" });
         this.addInPort("<=");
         this.addOutPort("=>");
         this.setPosition(x, y);
