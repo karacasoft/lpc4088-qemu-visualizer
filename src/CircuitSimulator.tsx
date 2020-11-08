@@ -151,16 +151,6 @@ export default class CircuitSimulator {
 
     private static circuit_rules: { [r_name: string]: Ruleset } = {
         // names of the rulesets are being used for simulation. Do not change...
-        "switch": {
-            rules: [
-                chip({ pin_dir: "input", pin_func: "GPIO" }),
-                zeroOrMore(or([resistance(), ldr()])),
-                or([_switch(), joystick()]),
-                zeroOrMore(or([resistance(), ldr()])),
-                or([voltage(), ground()]),
-            ],
-            simulate: CircuitSimulator.simulateSwitch,
-        },
         "led1": {
             rules: [
                 chip({ pin_dir: "output", pin_func: "GPIO" }),
@@ -188,6 +178,16 @@ export default class CircuitSimulator {
                 or([voltage(), ground()]),
             ],
             simulate: CircuitSimulator.simulateInput,
+        },
+        "switch": {
+            rules: [
+                chip({ pin_dir: "input", pin_func: "GPIO" }),
+                zeroOrMore(or([resistance(), ldr()])),
+                or([_switch(), joystick()]),
+                zeroOrMore(or([resistance(), ldr()])),
+                or([voltage(), ground()]),
+            ],
+            simulate: CircuitSimulator.simulateSwitch,
         },
     };
 
@@ -416,7 +416,17 @@ export default class CircuitSimulator {
             const target_port = current_node_is === "source" ? current_link.getTargetPort() : current_link.getSourcePort();
             const next_node = target_port.getNode() as PeripheralNodeModel;
             const next_ports = next_node.followConnection(target_port.getID());
-            if(next_ports.length === 1 && Object.keys(next_ports[0].getLinks()).length === 1) {
+            if(next_ports.length === 1 && Object.keys(next_ports[0].getLinks()).length === 2) {
+                current_port = next_ports[0];
+
+                const next_link_id = Object.keys(current_port.getLinks()).filter(l => l !== current_link?.getID())[0];
+
+                
+                current_link = current_port.getLinks()[next_link_id];
+                current_node_is = current_link.getTargetPort().getNode() === next_node ? "target" : "source";
+                current_node = next_node;
+            }
+            else if(next_ports.length === 1 && Object.keys(next_ports[0].getLinks()).length === 1) {
                 current_port = next_ports[0];
                 current_link = Object.values(current_port.getLinks())[0];
                 current_node_is = current_link.getTargetPort().getNode() === next_node ? "target" : "source";
@@ -472,7 +482,6 @@ export default class CircuitSimulator {
             }
         }
         if(!next_exists) {
-            //port_chain.push(current_port);
             // this is a valid circuit
             // simulate accordingly
             return { node_chain, port_chain };

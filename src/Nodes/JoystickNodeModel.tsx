@@ -26,19 +26,19 @@ export default class JoystickNodeModel extends PeripheralNodeModel {
         switch(curr_port?.getName()) {
             case "Up":
                 if(this.up_pressed) return [this.getInPorts()[0]];
-                break;
+                else return [curr_port];
             case "Down":
                 if(this.down_pressed) return [this.getInPorts()[0]];
-                break;
+                else return [curr_port];
             case "Left":
                 if(this.left_pressed) return [this.getInPorts()[0]];
-                break;
+                else return [curr_port];
             case "Right":
                 if(this.right_pressed) return [this.getInPorts()[0]];
-                break;
+                else return [curr_port];
             case "Center":
                 if(this.center_pressed) return [this.getInPorts()[0]];
-                break;
+                else return [curr_port];
         }
         return [];
     }
