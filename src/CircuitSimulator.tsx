@@ -1,4 +1,4 @@
-import { DiagramModel, LinkModel, PortModel } from '@projectstorm/react-diagrams';
+import { DiagramModel, LinkModel, PortModel, PortModelGenerics } from '@projectstorm/react-diagrams';
 import { IOCON_LOOKUP_TABLE } from './common/IOCONLookup';
 import { IOCONState } from './common/QemuConnectorTypes';
 import { getModel } from './Diagram';
@@ -11,10 +11,15 @@ import ResistanceNodeModel from './Nodes/ResistanceNodeModel';
 import UltraSonicNodeModel from './Nodes/UltraSonicNodeModel';
 import VoltageNodeModel from './Nodes/VoltageNodeModel';
 
+type NodeChain = Array<NodeChain | PeripheralNodeModel>;
+type PortChain = Array<PortChain | PortModel>;
+
 export type CircuitNodeRule = ChipNodeRule | LEDNodeRule | LogicalCombinationRule |
     ZeroOrMoreRule | ResistanceNodeRule | LDRNodeRule | SwitchNodeRule |
     JoystickNodeRule |
-    VoltageNodeRule | GroundNodeRule;
+    VoltageNodeRule |
+    GroundNodeRule |
+    JunctionNodeRule;
 
 interface ZeroOrMoreRule {
     peripheral: "zeroormore";
@@ -66,6 +71,12 @@ interface VoltageNodeRule {
 
 interface GroundNodeRule {
     peripheral: "ground";
+}
+
+interface JunctionNodeRule {
+    peripheral: "junction";
+    route1: CircuitNodeRule[];
+    route2: CircuitNodeRule[];
 }
 
 export function zeroOrMore(rule: CircuitNodeRule, min?: number, max?: number): ZeroOrMoreRule {
@@ -126,9 +137,17 @@ export function _switch(): SwitchNodeRule { return { peripheral: "switch" }; }
 
 export function joystick(): JoystickNodeRule { return { peripheral: "joystick"}; }
 
+export function junction(route1: CircuitNodeRule[], route2: CircuitNodeRule[]): JunctionNodeRule {
+    return {
+        peripheral: "junction",
+        route1,
+        route2,
+    };
+}
+
 export interface Ruleset {
     rules: CircuitNodeRule[];
-    simulate?: (ruleset_name: string, node_chain: PeripheralNodeModel[], port_chain: PortModel[]) => void;
+    simulate?: (ruleset_name: string, node_chain: NodeChain, port_chain: PortChain) => void;
 }
 
 export type OnInputChangeListener = (port: number, pin: number, value: number) => void;
@@ -183,26 +202,74 @@ export default class CircuitSimulator {
             rules: [
                 chip({ pin_dir: "input", pin_func: "GPIO" }),
                 zeroOrMore(or([resistance(), ldr()])),
-                or([_switch(), joystick()]),
+                _switch(),
                 zeroOrMore(or([resistance(), ldr()])),
                 or([voltage(), ground()]),
             ],
             simulate: CircuitSimulator.simulateSwitch,
         },
+        "joystick1": {
+            rules: [
+                chip({ pin_dir: "input", pin_func: "GPIO" }),
+                junction([
+                    zeroOrMore(resistance(), 1),
+                    voltage(),
+                ],[
+                    joystick(),
+                    ground(),
+                ])
+            ],
+            simulate: CircuitSimulator.simulateJoystickGroundConnected,
+        },
+        "joystick2": {
+            rules: [
+                chip({ pin_dir: "input", pin_func: "GPIO" }),
+                junction([
+                    zeroOrMore(resistance(), 1),
+                    voltage(),
+                ],[
+                    joystick(),
+                ])
+            ],
+            simulate: CircuitSimulator.simulateJoystickVoltageConnected,
+        },
+        "joystick3": {
+            rules: [
+                chip({ pin_dir: "input", pin_func: "GPIO" }),
+                junction([
+                    ground(),
+                ],[
+                    joystick(),
+                    zeroOrMore(resistance(), 1),
+                    voltage(),
+                ])
+            ],
+        },
+        "joystick4": {
+            rules: [
+                chip({ pin_dir: "input", pin_func: "GPIO" }),
+                junction([
+                    
+                    ground(),
+                ],[
+                    joystick(),
+                ])
+            ],
+        }
     };
 
     
 
-    static simulateLED(ruleset_name: string, node_chain: PeripheralNodeModel[], port_chain: PortModel[]) {
-        const chip = port_chain[0].getNode() as ChipNodeModel;
-        const chip_port = port_chain[0];
+    static simulateLED(ruleset_name: string, node_chain: NodeChain, port_chain: PortChain) {
+        const chip = (port_chain[0] as PortModel).getNode() as ChipNodeModel;
+        const chip_port = port_chain[0] as PortModel;
         const port_nr = chip.lpc_4088_port;
         const pin_nr = parseInt(chip_port.getName());
 
         const v_top = (ChipNodeModel.chips[port_nr] as ChipNodeModel).pin_voltages_initial[pin_nr];
         
         let totalRes = 0;
-        port_chain.filter(p => p !== null).forEach(p => {
+        port_chain.filter(p => p !== null).map(p => p as PortModel).forEach(p => {
             const node = p.getNode() as PeripheralNodeModel;
             if(node.PERIPHAREL_TYPE === Peripheral_Type.Resistance) {
                 const r_node = node as ResistanceNodeModel;
@@ -217,7 +284,7 @@ export default class CircuitSimulator {
         } else if(ruleset_name === "led2") {
             current = (3.3 - v_top) / (totalRes + 0.001);
         }
-        port_chain.filter(p => p !== null).forEach(p => {
+        port_chain.filter(p => p !== null).map(p => p as PortModel).forEach(p => {
             const node = p.getNode() as PeripheralNodeModel;
             if(node.PERIPHAREL_TYPE === Peripheral_Type.LED) {
                 const l_node = node as LEDNodeModel;
@@ -226,14 +293,14 @@ export default class CircuitSimulator {
         });
     }
 
-    static simulateInput(ruleset_name: string, node_chain: PeripheralNodeModel[], port_chain: PortModel[]) {
+    static simulateInput(ruleset_name: string, node_chain: NodeChain, port_chain: PortChain) {
         const chip = node_chain[0] as ChipNodeModel;
-        const chip_port = port_chain[0];
+        const chip_port = port_chain[0] as PortModel;
 
         const port_nr = chip.lpc_4088_port;
         const pin_nr = parseInt(chip_port.getName());
 
-        const last_node = node_chain[node_chain.length - 1];
+        const last_node = node_chain[node_chain.length - 1] as PeripheralNodeModel;
         
         if(last_node.PERIPHAREL_TYPE === Peripheral_Type.Voltage) {
             chip.pin_voltages[pin_nr] = 3.3;
@@ -244,8 +311,36 @@ export default class CircuitSimulator {
             && CircuitSimulator._onInputChangeListener(port_nr, pin_nr, chip.pin_voltages[pin_nr]);
     }
 
-    static simulateSwitch(ruleset_name: string, node_chain: PeripheralNodeModel[], port_chain: PortModel[]) {
+    static simulateSwitch(ruleset_name: string, node_chain: NodeChain, port_chain: PortChain) {
         CircuitSimulator.simulateInput(ruleset_name, node_chain, port_chain);
+    }
+
+    static simulateJoystickGroundConnected(ruleset_name: string, node_chain: NodeChain, port_chain: PortChain) {
+        console.log(node_chain);
+        const chip = node_chain[0] as ChipNodeModel;
+        const chip_port = port_chain[0] as PortModel;
+
+        const port_nr = chip.lpc_4088_port;
+        const pin_nr = parseInt(chip_port.getName());
+
+        chip.pin_voltages[pin_nr] = 0;
+
+        CircuitSimulator._onInputChangeListener
+            && CircuitSimulator._onInputChangeListener(port_nr, pin_nr, chip.pin_voltages[pin_nr]);
+    }
+
+    static simulateJoystickVoltageConnected(ruleset_name: string, node_chain: NodeChain, port_chain: PortChain) {
+        console.log(node_chain);
+        const chip = node_chain[0] as ChipNodeModel;
+        const chip_port = port_chain[0] as PortModel;
+
+        const port_nr = chip.lpc_4088_port;
+        const pin_nr = parseInt(chip_port.getName());
+
+        chip.pin_voltages[pin_nr] = 3.3;
+
+        CircuitSimulator._onInputChangeListener
+            && CircuitSimulator._onInputChangeListener(port_nr, pin_nr, chip.pin_voltages[pin_nr]);
     }
 
     static applyRule(rule: CircuitNodeRule, port: PortModel, node?: PeripheralNodeModel): boolean {
@@ -303,6 +398,9 @@ export default class CircuitSimulator {
                 return true;
             case "voltage":
                 if(node.PERIPHAREL_TYPE !== Peripheral_Type.Voltage) return false;
+                return true;
+            case "junction":
+                if(node.PERIPHAREL_TYPE !== Peripheral_Type.Junction) return false;
                 return true;
             case "combination":
                 if(rule.combination === "or") {
@@ -399,10 +497,12 @@ export default class CircuitSimulator {
 
     }
 
-    static checkRuleset(ruleset: Ruleset, ruleset_name: string, start_link: LinkModel, start_node: PeripheralNodeModel):
-            false | { node_chain: PeripheralNodeModel[], port_chain: PortModel[] } {
+    static checkRuleset(ruleset: Ruleset, ruleset_name: string, start_link: LinkModel, start_node: PeripheralNodeModel, start_follow: boolean = false):
+            false | { node_chain: NodeChain, port_chain: PortChain } {
         let start_node_is: "source" | "target" = start_link.getSourcePort().getNode() === start_node ? "source" : "target";
         let start_port = start_node_is === "source" ? start_link.getSourcePort() : start_link.getTargetPort();
+
+        let next_ports: PortModel<PortModelGenerics>[] = [];
 
         let current_node_is: "source" | "target" = start_node_is;
         let current_link: LinkModel | null = start_link;
@@ -415,49 +515,88 @@ export default class CircuitSimulator {
             if(current_link === null) return false;
             const target_port = current_node_is === "source" ? current_link.getTargetPort() : current_link.getSourcePort();
             const next_node = target_port.getNode() as PeripheralNodeModel;
-            const next_ports = next_node.followConnection(target_port.getID());
-            if(next_ports.length === 1 && Object.keys(next_ports[0].getLinks()).length === 2) {
-                current_port = next_ports[0];
-
-                const next_link_id = Object.keys(current_port.getLinks()).filter(l => l !== current_link?.getID())[0];
-
-                
-                current_link = current_port.getLinks()[next_link_id];
-                current_node_is = current_link.getTargetPort().getNode() === next_node ? "target" : "source";
-                current_node = next_node;
-            }
-            else if(next_ports.length === 1 && Object.keys(next_ports[0].getLinks()).length === 1) {
+            next_ports = next_node.followConnection(target_port.getID());
+            if(next_ports.length === 1 && Object.keys(next_ports[0].getLinks()).length === 1) {
                 current_port = next_ports[0];
                 current_link = Object.values(current_port.getLinks())[0];
-                current_node_is = current_link.getTargetPort().getNode() === next_node ? "target" : "source";
+                current_node_is = current_link.getTargetPort()?.getNode() === next_node ? "target" : "source";
                 current_node = next_node;
 
             } else if(next_ports.length === 1) {
                 current_node = next_node;
                 current_port = next_ports[0];
                 current_link = null;
-                next_exists = false;
 
             } else {
                 current_node = next_node;
                 current_port = null;
                 current_link = null;
-                next_exists = false;
             }
-            // we do not support branching circuits for now
             return true;
         }
+        if(start_follow) follow();
 
-        const node_chain: PeripheralNodeModel[] = [];
-        const port_chain: PortModel[] = [];
+        const node_chain: NodeChain = [];
+        const port_chain: PortChain = [];
 
         for(let rule of ruleset.rules) {
-            if(rule.peripheral === "zeroormore") {
+            if(rule.peripheral === "junction") {
+                const j_rule = rule;
+                if(next_ports.length === 2) {
+                    const p0 = next_ports[0];
+                    const p1 = next_ports[1];
+                    let r1;
+                    let r0 = CircuitSimulator.checkRuleset(
+                        { rules: j_rule.route1 },
+                        ruleset_name,
+                        Object.values(p0.getLinks())[0],
+                        current_node,
+                        true
+                    )
+                    if(r0 === false) {
+                        r0 = CircuitSimulator.checkRuleset(
+                            { rules: j_rule.route2 },
+                            ruleset_name,
+                            Object.values(p0.getLinks())[0],
+                            current_node,
+                            true
+                        )
+                        if(r0 === false) return false;
+                        else {
+                            r1 = CircuitSimulator.checkRuleset(
+                                { rules: j_rule.route1 },
+                                ruleset_name,
+                                Object.values(p1.getLinks())[0],
+                                current_node,
+                                true
+                            )
+                        }
+                    } else {
+                        r1 = CircuitSimulator.checkRuleset(
+                            { rules: j_rule.route2 },
+                            ruleset_name,
+                            Object.values(p1.getLinks())[0],
+                            current_node,
+                            true
+                        )
+                    }
+                    if(r1 === false) return false;
+                    else {
+                        node_chain.push(r0.node_chain, r1.node_chain);
+                        port_chain.push(r0.port_chain, r1.port_chain);
+                        next_exists = false;
+                        break;
+                    }
+                } else {
+                    return false;
+                }
+            } else if(rule.peripheral === "zeroormore") {
                 let count = 0;
                 while(this.applyRule(rule.rule, current_port, current_node)) {
                     port_chain.push(current_port);
                     node_chain.push(current_node);
                     count++;
+                    if(current_link === null) next_exists = false;
                     if(!follow()) {
                         break;
                     }
@@ -472,6 +611,7 @@ export default class CircuitSimulator {
                 if(this.applyRule(rule, current_port, current_node)) {
                     port_chain.push(current_port);
                     node_chain.push(current_node);
+                    if(current_link === null) next_exists = false;
                     if(!follow()) {
                         break;
                     }
@@ -481,7 +621,8 @@ export default class CircuitSimulator {
                 }
             }
         }
-        if(!next_exists) {
+
+        if(this.applyRule(ruleset.rules[ruleset.rules.length - 1], current_port, current_node) && !next_exists) {
             // this is a valid circuit
             // simulate accordingly
             return { node_chain, port_chain };

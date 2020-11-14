@@ -15,6 +15,6 @@ export default class JoystickNodeFactory extends AbstractReactFactory<JoystickNo
     }
 
     generateModel(event: GenerateModelEvent) {
-        return new JoystickNodeModel();
+        return new JoystickNodeModel(0, 0);
     }
 }

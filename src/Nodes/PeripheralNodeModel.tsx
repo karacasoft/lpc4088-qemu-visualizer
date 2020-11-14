@@ -14,6 +14,7 @@ export enum Peripheral_Type {
     VoltagePot,
     Hand,
     Joystick,
+    Junction,
 }
 
 export default class PeripheralNodeModel extends DefaultNodeModel {

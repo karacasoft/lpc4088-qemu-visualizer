@@ -17,6 +17,7 @@ import LDRNodeModel from './Nodes/LDRNodeModel';
 import UltraSonicNodeModel from './Nodes/UltraSonicNodeModel';
 import SwitchNodeModel from './Nodes/SwitchNodeModel';
 import JoystickNodeModel from './Nodes/JoystickNodeModel';
+import JunctionNodeModel from './Nodes/JunctionNodeModel';
 import CircuitChecker from './CircuitChecker/CircuitChecker';
 import PeripheralNodeModel from './Nodes/PeripheralNodeModel';
 
@@ -67,7 +68,11 @@ function addItem(id: string) {
     getModel().addNode(node);
   }
   else if (id === "joystick") {
-    let node = new JoystickNodeModel();
+    let node = new JoystickNodeModel(X, Y);
+    getModel().addNode(node);
+  }
+  else if (id === "junction") {
+    let node = new JunctionNodeModel(X, Y);
     getModel().addNode(node);
   }
   else if (id === "switch") {

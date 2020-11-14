@@ -34,6 +34,7 @@ const list_options = [
         id: "misc",
         options: [
             { id: "ldr", text: "LDR" },
+            { id: "junction", text: "Junction" },
             { id: "ultrasonic", text: "Ultrasonic Sensor" },
             { id: "joystick", text: "Joystick" },
             { id: "switch", text: "Switch" },

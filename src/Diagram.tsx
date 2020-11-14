@@ -17,6 +17,7 @@ import CircuitSimulator from './CircuitSimulator';
 import LEDNodeFactory from './CustomNodes/LEDNodeFactory';
 import SwitchNodeFactory from './CustomNodes/SwitchNodeFactory';
 import JoystickNodeFactory from './CustomNodes/JoystickNodeFactory';
+import JunctionNodeFactory from './CustomNodes/JunctionNodeFactory';
 import ChipNodeFactory from './CustomNodes/ChipNodeFactory';
 import PeripheralNodeFactory from './CustomNodes/PeripheralNodeFactory';
 import { SimplePortFactory } from './CustomNodes/SimplePortFactory';
@@ -47,12 +48,16 @@ engine.getPortFactories().registerFactory(
 engine.getPortFactories().registerFactory(
     new SimplePortFactory('joystick', (config) => new DefaultPortModel(config))
 );
+engine.getPortFactories().registerFactory(
+    new SimplePortFactory('junction', (config) => new DefaultPortModel(config))
+);
 
 engine.getNodeFactories().registerFactory(new PeripheralNodeFactory());
 engine.getNodeFactories().registerFactory(new LEDNodeFactory());
 engine.getNodeFactories().registerFactory(new SwitchNodeFactory());
 engine.getNodeFactories().registerFactory(new JoystickNodeFactory());
 engine.getNodeFactories().registerFactory(new ChipNodeFactory());
+engine.getNodeFactories().registerFactory(new JunctionNodeFactory());
 
 export function getModel() { return model; }
 export function getEngine() { return engine; }

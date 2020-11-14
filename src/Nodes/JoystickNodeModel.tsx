@@ -9,8 +9,9 @@ export default class JoystickNodeModel extends PeripheralNodeModel {
     right_pressed: boolean = false;
     center_pressed: boolean = false;
 
-    constructor() {
+    constructor(x: number, y: number) {
         super({ type: "joystick" });
+        this.setPosition(x, y);
         this.addInPort("Common");
         this.addOutPort("Up");
         this.addOutPort("Down");
@@ -26,19 +27,14 @@ export default class JoystickNodeModel extends PeripheralNodeModel {
         switch(curr_port?.getName()) {
             case "Up":
                 if(this.up_pressed) return [this.getInPorts()[0]];
-                else return [curr_port];
             case "Down":
                 if(this.down_pressed) return [this.getInPorts()[0]];
-                else return [curr_port];
             case "Left":
                 if(this.left_pressed) return [this.getInPorts()[0]];
-                else return [curr_port];
             case "Right":
                 if(this.right_pressed) return [this.getInPorts()[0]];
-                else return [curr_port];
             case "Center":
                 if(this.center_pressed) return [this.getInPorts()[0]];
-                else return [curr_port];
         }
         return [];
     }
