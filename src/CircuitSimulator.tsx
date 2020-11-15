@@ -244,6 +244,7 @@ export default class CircuitSimulator {
                     voltage(),
                 ])
             ],
+            simulate: CircuitSimulator.simulateJoystickVoltageConnected,
         },
         "joystick4": {
             rules: [
@@ -255,6 +256,7 @@ export default class CircuitSimulator {
                     joystick(),
                 ])
             ],
+            simulate: CircuitSimulator.simulateJoystickGroundConnected,
         }
     };
 
@@ -316,7 +318,6 @@ export default class CircuitSimulator {
     }
 
     static simulateJoystickGroundConnected(ruleset_name: string, node_chain: NodeChain, port_chain: PortChain) {
-        console.log(node_chain);
         const chip = node_chain[0] as ChipNodeModel;
         const chip_port = port_chain[0] as PortModel;
 
@@ -330,7 +331,6 @@ export default class CircuitSimulator {
     }
 
     static simulateJoystickVoltageConnected(ruleset_name: string, node_chain: NodeChain, port_chain: PortChain) {
-        console.log(node_chain);
         const chip = node_chain[0] as ChipNodeModel;
         const chip_port = port_chain[0] as PortModel;
 
