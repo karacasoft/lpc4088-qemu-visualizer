@@ -11,7 +11,7 @@ import createEngine, {
 } from '@projectstorm/react-diagrams';
 import { ipcRenderer } from 'electron';
 import React from 'react';
-import { MachineStateEventData, IOCONState } from './common/QemuConnectorTypes';
+import { MachineStateEventData, IOCONState, pwmOffsetToRegName } from './common/QemuConnectorTypes';
 import { IOCON_LOOKUP_TABLE } from './common/IOCONLookup';
 import CircuitSimulator from './CircuitSimulator';
 import LEDNodeFactory from './CustomNodes/LEDNodeFactory';
@@ -62,6 +62,17 @@ engine.getNodeFactories().registerFactory(new JunctionNodeFactory());
 export function getModel() { return model; }
 export function getEngine() { return engine; }
 
+let redrawing = false;
+
+function redrawCanvas() {
+    if(!redrawing) {
+        redrawing = true;
+        getEngine().repaintCanvas(true).then(() => {
+            redrawing = false;
+        });
+    }
+}
+
 function processMachineStateUpdate(state_update: MachineStateEventData) {
     switch(state_update.module) {
         case "GPIO":
@@ -110,11 +121,16 @@ function processMachineStateUpdate(state_update: MachineStateEventData) {
                     CircuitSimulator._onTimerEMRChangeListener(state_update.timer_nr, state_update.old_emr, state_update.new_emr);
                 }
             }
+            break;
+        case "PWM":
+            if(state_update.event === "reg_change") {
+                CircuitSimulator.doOnPWMChangeListener(state_update.pwm_nr, pwmOffsetToRegName(state_update.offset), state_update.new_val);
+            }
+            break;
         default:
             
             break;
     }
-    getEngine().repaintCanvas();
 }
 
 export default class CircuitDisplay extends React.Component<MyProps, MyState> {
@@ -174,6 +190,7 @@ export default class CircuitDisplay extends React.Component<MyProps, MyState> {
             processMachineStateUpdate(m_state_change_ev);
 
             CircuitSimulator.startSimulation();
+            redrawCanvas();
         });
 
         ipcRenderer.on('us-distance', (ev, val) => {

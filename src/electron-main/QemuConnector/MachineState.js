@@ -34,6 +34,7 @@ var MachineState = /** @class */ (function () {
             ]
         };
         this.timerState = {};
+        this.pwmState = {};
     }
     Object.defineProperty(MachineState.prototype, "getGpioState", {
         get: function () {

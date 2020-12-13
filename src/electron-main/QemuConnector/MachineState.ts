@@ -1,9 +1,10 @@
-import { GPIOState, IOCONState, TIMERState } from "../../common/QemuConnectorTypes";
+import { GPIOState, IOCONState, PWMState, TIMERState } from "../../common/QemuConnectorTypes";
 
 class MachineState {
     gpioState: GPIOState;
     ioconState: IOCONState;
     timerState: TIMERState;
+    pwmState: PWMState;
 
     constructor() {
         this.gpioState = {
@@ -29,6 +30,7 @@ class MachineState {
         };
 
         this.timerState = {};
+        this.pwmState = {};
     }
 
     

@@ -1,4 +1,4 @@
-export declare type MachineStateEventData = GPIOStateEventData | IOCONStateEventData | TIMERStateEventData | UARTStateEventData;
+export declare type MachineStateEventData = GPIOStateEventData | IOCONStateEventData | TIMERStateEventData | UARTStateEventData | PWMStateEventData;
 declare type GPIOStateEventData = GPIOStateDIRChangeEventData | GPIOStateMASKChangeEventData | GPIOStatePINChangeEventData;
 interface GPIOStateDIRChangeEventData {
     module: "GPIO";
@@ -66,6 +66,15 @@ interface GPIOPortState {
     MASK: number;
     PIN: number;
 }
+declare type PWMStateEventData = PWMStateRegChangeEventData;
+interface PWMStateRegChangeEventData {
+    module: "PWM";
+    event: "reg_change";
+    pwm_nr: number;
+    offset: number;
+    old_val: number;
+    new_val: number;
+}
 export interface GPIOState {
     PORTS: GPIOPortState[];
 }
@@ -79,5 +88,9 @@ export interface IOCONState {
 export interface TIMERState {
     [k: string]: number;
 }
+export interface PWMState {
+    [k: string]: number;
+}
 export declare function timerOffsetToRegName(offset: number): "IR" | "TCR" | "TC" | "PR" | "PC" | "MCR" | "MR0" | "MR1" | "MR2" | "MR3" | "CCR" | "CR0" | "CR1" | "EMR" | "CTCR" | "[?]";
+export declare function pwmOffsetToRegName(offset: number): "IR" | "TCR" | "TC" | "PR" | "PC" | "MCR" | "MR0" | "MR1" | "MR2" | "MR3" | "CCR" | "CR0" | "CR1" | "CTCR" | "[?]" | "MR4" | "MR5" | "MR6" | "PCR" | "LER";
 export {};

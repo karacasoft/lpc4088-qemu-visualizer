@@ -153,6 +153,7 @@ export interface Ruleset {
 export type OnInputChangeListener = (port: number, pin: number, value: number) => void;
 export type OnTimerEMRChangeListener = (timer: number, old_val: number, emr_val: number) => void;
 
+export type OnPWMChangeListener = (pwm: number, reg: string, value: number) => void;
 
 export default class CircuitSimulator {
     static iocon_state: IOCONState | null = null;
@@ -163,6 +164,12 @@ export default class CircuitSimulator {
 
     private static _onInputChangeListener?: OnInputChangeListener;
     static _onTimerEMRChangeListener?: OnTimerEMRChangeListener;
+    static _onPWMChangeListener?: OnPWMChangeListener;
+
+    public static doOnPWMChangeListener(pwm: number, reg: string, value: number) {
+        console.log("on PWM change");
+        //CircuitSimulator._onPWMChangeListener && CircuitSimulator._onPWMChangeListener(pwm, reg, value);
+    }
 
     public static set onInputChangeListener(l: OnInputChangeListener) {
         CircuitSimulator._onInputChangeListener = l;

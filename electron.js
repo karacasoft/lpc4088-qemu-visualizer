@@ -52,8 +52,8 @@ var path_1 = __importDefault(require("path"));
 var sender_1 = require("qemu-lpc4088-controller/dist/sender");
 var QemuConnector_1 = __importDefault(require("./src/electron-main/QemuConnector/QemuConnector"));
 var qemu_mq_types_1 = require("qemu-lpc4088-controller/dist/qemu_mq_types");
-var mainWindow;
-var optionsWindow;
+var mainWindow = null;
+var optionsWindow = null;
 var _filename = null;
 var _qemuInterface = null;
 function createWindow() {
@@ -80,7 +80,7 @@ function createWindow() {
             optionsWindow.close();
         }
     });
-    optionsWindow = new electron_1.BrowserWindow({
+    /*optionsWindow = new BrowserWindow({
         width: 1024,
         height: 350,
         webPreferences: {
@@ -89,17 +89,21 @@ function createWindow() {
             enableRemoteModule: true,
         },
     });
-    var startURLOptions = startURL + "?options=true";
+
+    let startURLOptions = startURL + "?options=true";
     optionsWindow.setMenu(null);
     optionsWindow.loadURL(startURLOptions);
+
+    
+
+    optionsWindow.on('closed', () => {
+        optionsWindow = null;
+    });*/
     console.log(process.env.NODE_ENV);
     if (process.env.NODE_ENV === "development") {
         mainWindow.webContents.openDevTools();
-        optionsWindow.webContents.openDevTools();
+        //optionsWindow.webContents.openDevTools();
     }
-    optionsWindow.on('closed', function () {
-        optionsWindow = null;
-    });
     electron_1.ipcMain.on('gpio-pin-change', function (ev, port, pin, val) {
         if (_qemuInterface) {
             var port_nr = qemu_mq_types_1.toPortType(port);
@@ -154,6 +158,7 @@ function createWindow() {
                             mainWindow.webContents.send("on-machine-state-changed", ev);
                         }
                     });
+                    console.log(_qemuInterface);
                     _qemuInterface.run();
                     if (mainWindow !== null && QemuConnector_1.default.machineState) {
                         mainWindow.webContents.send("exec-started", QemuConnector_1.default.machineState.getIoconState);
@@ -164,6 +169,7 @@ function createWindow() {
                     return [3 /*break*/, 4];
                 case 3:
                     err_1 = _a.sent();
+                    console.log(err_1);
                     if (optionsWindow !== null) {
                         optionsWindow.webContents.send("exec-start-failed");
                     }

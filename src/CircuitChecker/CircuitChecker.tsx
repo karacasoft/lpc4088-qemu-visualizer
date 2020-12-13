@@ -1,13 +1,11 @@
 import { Button, Grid, TextField } from '@material-ui/core';
-import { readFileSync } from 'fs';
+import { closeSync, openSync, readFileSync, writeSync } from 'fs';
 import { resolve } from 'path';
 import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { getEngine, getModel } from '../Diagram';
 import PeripheralNodeModel from '../Nodes/PeripheralNodeModel';
 import CircuitCheckerRuleset from './CircuitCheckerRuleset';
-import CircuitSimulator from '../CircuitSimulator';
-import { DiagramListener } from '@projectstorm/react-diagrams';
 
 interface CircuitCheckerProps {
 
@@ -68,7 +66,7 @@ export default class CircuitChecker extends React.Component<CircuitCheckerProps,
     onDropDiagramDirectory(files: File[]) {
         if(files.length > 0) {
             this.setState({
-                diagramDirectory: resolve(files[0].path, ".."),
+                diagramDirectory: resolve(files[0].path, "..", ".."),
             });
         }
     }
@@ -78,11 +76,12 @@ export default class CircuitChecker extends React.Component<CircuitCheckerProps,
         const st_list = st_list_file_contents.toString("utf8").trim().split("\n");
 
         const process_st = async (st: string) => {
+            const report_file = openSync("circuit_check_report.csv", "a");
             return new Promise((r, reject) => {
                 PeripheralNodeModel.chips = [];
                 PeripheralNodeModel.all_peripherals = [];
                 const rule_file = resolve(this.state.rulesFile, `${st}.txt`);
-                const circuit_file = resolve(this.state.diagramDirectory, `${st}.lpc-vcf`);
+                const circuit_file = resolve(this.state.diagramDirectory, st, `${st}.lpc-vcf`);
     
                 const ruleset = CircuitCheckerRuleset.fromFile(rule_file);
                 const cf_contents = readFileSync(circuit_file);
@@ -107,15 +106,20 @@ export default class CircuitChecker extends React.Component<CircuitCheckerProps,
                         }
                     }
     
-                    console.log(ruleset.results);
+
+                    for (const result in ruleset.results) {
+                        writeSync(report_file, `${st},${result},${ruleset.results[result]}\n`);
+                    }
+                    closeSync(report_file);
                     r();
-                }, 1000);
+                }, 3000);
                 
             });
         }
         for(const st of st_list) {
             await process_st(st);
         }
+        
     }
 
     render() {

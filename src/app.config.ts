@@ -1,3 +1,3 @@
 export default {
-    enable_circuit_checker: true,
+    enable_circuit_checker: false,
 };

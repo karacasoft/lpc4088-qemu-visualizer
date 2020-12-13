@@ -6,8 +6,8 @@ import { GPIO, TIMER } from "qemu-lpc4088-controller/dist/sender";
 import QemuConnector from "./src/electron-main/QemuConnector/QemuConnector";
 import { toPinType, toPortType, toTimerType } from "qemu-lpc4088-controller/dist/qemu_mq_types";
 
-let mainWindow: BrowserWindow | null;
-let optionsWindow: BrowserWindow | null;
+let mainWindow: BrowserWindow | null = null;
+let optionsWindow: BrowserWindow | null = null;
 
 let _filename: string | null = null;
 let _qemuInterface: QemuProcessInterface | null = null;
@@ -41,7 +41,7 @@ function createWindow() {
         }
     });
 
-    optionsWindow = new BrowserWindow({
+    /*optionsWindow = new BrowserWindow({
         width: 1024,
         height: 350,
         webPreferences: {
@@ -55,16 +55,17 @@ function createWindow() {
     optionsWindow.setMenu(null);
     optionsWindow.loadURL(startURLOptions);
 
-    console.log(process.env.NODE_ENV);
-    if(process.env.NODE_ENV === "development") {
-        mainWindow.webContents.openDevTools();
-        optionsWindow.webContents.openDevTools();
-    }
+    
 
     optionsWindow.on('closed', () => {
         optionsWindow = null;
-    });
+    });*/
 
+    console.log(process.env.NODE_ENV);
+    if(process.env.NODE_ENV === "development") {
+        mainWindow.webContents.openDevTools();
+        //optionsWindow.webContents.openDevTools();
+    }
     ipcMain.on('gpio-pin-change', (ev, port, pin, val) => {
         if(_qemuInterface) {
             const port_nr = toPortType(port);
@@ -108,6 +109,7 @@ function createWindow() {
                         mainWindow.webContents.send("on-machine-state-changed", ev);
                     }
                 });
+                console.log(_qemuInterface);
                 _qemuInterface.run();
                 if(mainWindow !== null && QemuConnector.machineState) {
                     mainWindow.webContents.send("exec-started", QemuConnector.machineState.getIoconState);
@@ -116,6 +118,7 @@ function createWindow() {
                     optionsWindow.webContents.send("exec-started");
                 }
             } catch(err) {
+                console.log(err);
                 if(optionsWindow !== null) {
                     optionsWindow.webContents.send("exec-start-failed");
                 }

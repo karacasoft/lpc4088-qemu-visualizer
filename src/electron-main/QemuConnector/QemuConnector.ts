@@ -1,10 +1,16 @@
 import qemu_lpc_ctrl, { QemuEventData } from 'qemu-lpc4088-controller';
 import MachineState from './MachineState';
-import { MachineStateEventData, timerOffsetToRegName } from '../../common/QemuConnectorTypes';
+import { MachineStateEventData, timerOffsetToRegName, pwmOffsetToRegName } from '../../common/QemuConnectorTypes';
 
 export type QemuEventHandler = (qemuEvent: QemuEventData) => void;
 
 export type OnMachineStateChangeHandler = (event: MachineStateEventData) => void;
+
+async function sleep(ms: number) {
+    return new Promise<void>((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
 
 class QemuConnector {
     static eventHandler?: QemuEventHandler;
@@ -108,33 +114,62 @@ class QemuConnector {
                         }
                     }
                 }
+            } else if(msg.module === "PWM") {
+                const reg_name = pwmOffsetToRegName(msg.reg_offset);
+                const new_reg = msg.value;
+                const old_reg = this.machineState.pwmState[reg_name];
+                this.machineState.pwmState[reg_name] = new_reg;
+                if(QemuConnector.onMachineStateChangeHandler) {
+                    if(new_reg !== old_reg) {
+                        QemuConnector.onMachineStateChangeHandler({
+                            module: "PWM",
+                            event: "reg_change",
+                            pwm_nr: msg.pwm_name,
+                            offset: msg.reg_offset,
+                            old_val: old_reg,
+                            new_val: new_reg
+                        });
+                    }
+                }
             }
         }
     }
 
     static async start_qemu(exe_file: string) {
         this.machineState = new MachineState();
-        const qemu = await qemu_lpc_ctrl.start_qemu(exe_file);
-        qemu_lpc_ctrl.SenderMQ.open();
-        qemu_lpc_ctrl.ReceiverMQ.open();
         qemu_lpc_ctrl.ReceiverMQ.set_receive_handler((msg) => {
             this.updateMachineState(msg);
             if(QemuConnector.eventHandler !== undefined) {
                 QemuConnector.eventHandler(msg);
             }
         });
+        const qemu = await qemu_lpc_ctrl.start_qemu(exe_file);
+        
+        let connected = false;
+
+        while(!connected) {
+            try {
+                await qemu_lpc_ctrl.SenderMQ.open();
+                await qemu_lpc_ctrl.ReceiverMQ.open();
+                connected = true;
+            } catch(err) {
+                console.log("Cannot connect, retrying");
+            }
+            sleep(1000);
+        }
+        
         const orig_setOnExit = qemu.setOnExit;
         qemu.setOnExit = (onExit) => 
-                orig_setOnExit((err?: Error) => {
-                    qemu_lpc_ctrl.SenderMQ.close();
-                    qemu_lpc_ctrl.ReceiverMQ.close();
+                orig_setOnExit(async (err?: Error) => {
+                    await qemu_lpc_ctrl.SenderMQ.close();
+                    await qemu_lpc_ctrl.ReceiverMQ.close();
                     onExit(err);
                 });
 
         const orig_kill = qemu.kill;
-        qemu.kill = () => {
-            qemu_lpc_ctrl.SenderMQ.close();
-            qemu_lpc_ctrl.ReceiverMQ.close();
+        qemu.kill = async () => {
+            await qemu_lpc_ctrl.SenderMQ.close();
+            await qemu_lpc_ctrl.ReceiverMQ.close();
             orig_kill();
         }
         return qemu;

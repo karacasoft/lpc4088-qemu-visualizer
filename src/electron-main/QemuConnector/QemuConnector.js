@@ -42,6 +42,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var qemu_lpc4088_controller_1 = __importDefault(require("qemu-lpc4088-controller"));
 var MachineState_1 = __importDefault(require("./MachineState"));
 var QemuConnectorTypes_1 = require("../../common/QemuConnectorTypes");
+function sleep(ms) {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            return [2 /*return*/, new Promise(function (resolve) {
+                    setTimeout(resolve, ms);
+                })];
+        });
+    });
+}
 var QemuConnector = /** @class */ (function () {
     function QemuConnector() {
     }
@@ -146,41 +155,98 @@ var QemuConnector = /** @class */ (function () {
                     }
                 }
             }
+            else if (msg.module === "PWM") {
+                var reg_name = QemuConnectorTypes_1.pwmOffsetToRegName(msg.reg_offset);
+                var new_reg = msg.value;
+                var old_reg = this.machineState.pwmState[reg_name];
+                this.machineState.pwmState[reg_name] = new_reg;
+                if (QemuConnector.onMachineStateChangeHandler) {
+                    if (new_reg !== old_reg) {
+                        QemuConnector.onMachineStateChangeHandler({
+                            module: "PWM",
+                            event: "reg_change",
+                            pwm_nr: msg.pwm_name,
+                            offset: msg.reg_offset,
+                            old_val: old_reg,
+                            new_val: new_reg
+                        });
+                    }
+                }
+            }
         }
     };
     QemuConnector.start_qemu = function (exe_file) {
         return __awaiter(this, void 0, void 0, function () {
-            var qemu, orig_setOnExit, orig_kill;
+            var qemu, connected, err_1, orig_setOnExit, orig_kill;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         this.machineState = new MachineState_1.default();
-                        return [4 /*yield*/, qemu_lpc4088_controller_1.default.start_qemu(exe_file)];
-                    case 1:
-                        qemu = _a.sent();
-                        qemu_lpc4088_controller_1.default.SenderMQ.open();
-                        qemu_lpc4088_controller_1.default.ReceiverMQ.open();
                         qemu_lpc4088_controller_1.default.ReceiverMQ.set_receive_handler(function (msg) {
                             _this.updateMachineState(msg);
                             if (QemuConnector.eventHandler !== undefined) {
                                 QemuConnector.eventHandler(msg);
                             }
                         });
+                        return [4 /*yield*/, qemu_lpc4088_controller_1.default.start_qemu(exe_file)];
+                    case 1:
+                        qemu = _a.sent();
+                        connected = false;
+                        _a.label = 2;
+                    case 2:
+                        if (!!connected) return [3 /*break*/, 8];
+                        _a.label = 3;
+                    case 3:
+                        _a.trys.push([3, 6, , 7]);
+                        return [4 /*yield*/, qemu_lpc4088_controller_1.default.SenderMQ.open()];
+                    case 4:
+                        _a.sent();
+                        return [4 /*yield*/, qemu_lpc4088_controller_1.default.ReceiverMQ.open()];
+                    case 5:
+                        _a.sent();
+                        connected = true;
+                        return [3 /*break*/, 7];
+                    case 6:
+                        err_1 = _a.sent();
+                        console.log("Cannot connect, retrying");
+                        return [3 /*break*/, 7];
+                    case 7:
+                        sleep(1000);
+                        return [3 /*break*/, 2];
+                    case 8:
                         orig_setOnExit = qemu.setOnExit;
                         qemu.setOnExit = function (onExit) {
-                            return orig_setOnExit(function (err) {
-                                qemu_lpc4088_controller_1.default.SenderMQ.close();
-                                qemu_lpc4088_controller_1.default.ReceiverMQ.close();
-                                onExit(err);
-                            });
+                            return orig_setOnExit(function (err) { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0: return [4 /*yield*/, qemu_lpc4088_controller_1.default.SenderMQ.close()];
+                                        case 1:
+                                            _a.sent();
+                                            return [4 /*yield*/, qemu_lpc4088_controller_1.default.ReceiverMQ.close()];
+                                        case 2:
+                                            _a.sent();
+                                            onExit(err);
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); });
                         };
                         orig_kill = qemu.kill;
-                        qemu.kill = function () {
-                            qemu_lpc4088_controller_1.default.SenderMQ.close();
-                            qemu_lpc4088_controller_1.default.ReceiverMQ.close();
-                            orig_kill();
-                        };
+                        qemu.kill = function () { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, qemu_lpc4088_controller_1.default.SenderMQ.close()];
+                                    case 1:
+                                        _a.sent();
+                                        return [4 /*yield*/, qemu_lpc4088_controller_1.default.ReceiverMQ.close()];
+                                    case 2:
+                                        _a.sent();
+                                        orig_kill();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); };
                         return [2 /*return*/, qemu];
                 }
             });

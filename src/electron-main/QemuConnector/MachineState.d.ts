@@ -1,8 +1,9 @@
-import { GPIOState, IOCONState, TIMERState } from "../../common/QemuConnectorTypes";
+import { GPIOState, IOCONState, PWMState, TIMERState } from "../../common/QemuConnectorTypes";
 declare class MachineState {
     gpioState: GPIOState;
     ioconState: IOCONState;
     timerState: TIMERState;
+    pwmState: PWMState;
     constructor();
     get getGpioState(): GPIOState;
     get getIoconState(): IOCONState;

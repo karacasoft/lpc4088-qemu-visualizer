@@ -29,7 +29,6 @@ export default class CircuitCheckerRuleset {
 
     static generateLEDRule(port: number, pin: number, ending_node: "voltage" | "ground", name: string) {
         let rule: CircuitCheckerRulesetType;
-        console.log(ending_node);
         if(ending_node === "ground") {
             rule = {
                 rules: [
@@ -81,7 +80,6 @@ export default class CircuitCheckerRuleset {
                 checker.rulesets.push(CircuitCheckerRuleset.parseLEDRule(rule));
             }
         });
-        console.log(checker);
         return checker;
     }
 }
